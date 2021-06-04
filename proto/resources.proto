@@ -1,0 +1,21 @@
+syntax = "proto3";
+package kiss.resources;
+option go_package = "github.com/ovotech/kiss/proto";
+
+// Required information from client for every request
+message ClientMeta {
+    // name and namespace the secret will be scoped to
+    string namespace = 1;
+    string name = 2;
+}
+
+service KISS {
+    // Temporary RPC to test authorization; will be removed.
+    rpc Ping (PingRequest) returns (PingResponse) {}
+}
+
+message PingRequest {
+    ClientMeta metadata = 1;
+}
+
+message PingResponse {}
