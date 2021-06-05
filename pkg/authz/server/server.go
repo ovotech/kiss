@@ -78,11 +78,13 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 			return nil, errors.New("Malformed client request")
 		}
 
+		// errors if token is invalid (expired, bad signature or unparsable)
 		claims, err := i.parseToken(ctx)
 		if err != nil {
 			return nil, err
 		}
 
+		// errors if user is not authorized to manipulate a secret for the given namespace
 		err = i.authorize(claims, mdr.GetMetadata().GetNamespace())
 		if err != nil {
 			auditLog(
@@ -111,6 +113,8 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 
 // Parses the access token from the context and returns the custom claims, validating the token in
 // the process.
+// Errors out if token fails validation for whatever reason. If no error, the token's claims can be
+// trusted.
 func (i *serverAuthzInterceptor) parseToken(ctx context.Context) (*claims, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
@@ -144,6 +148,7 @@ func (i *serverAuthzInterceptor) parseToken(ctx context.Context) (*claims, error
 
 // Returns an error if the user's claims is not authorized to perform an action on the
 // requestNamespace. This assumes the token has already been validated.
+// Note: this function does _not_ validate the token.
 func (i *serverAuthzInterceptor) authorize(claims *claims, requestNamespace string) error {
 	for _, claimNamespace := range claims.namespaces {
 		if claimNamespace == requestNamespace {
@@ -161,8 +166,9 @@ func (i *serverAuthzInterceptor) authorize(claims *claims, requestNamespace stri
 }
 
 // Extracts claims from a token. We use our own function for this instead of the library's one
-// because we want to extract namespaces from strings with some regex, and support dynamically
-// configuring the keys for the list of namespaces and the user identifier.
+// because we want to extract namespaces from strings with some regex, and support configuring the
+// keys for the list of namespaces and the user identifier at runtime.
+// Note: this function does _not_ validate the token.
 func (i *serverAuthzInterceptor) getCustomClaims(token *jwt.Token) (*claims, error) {
 	b64Payload := strings.Split(token.Raw, ".")[1]
 	strPayload, err := b64.StdEncoding.DecodeString(b64Payload)
@@ -205,7 +211,7 @@ func (i *serverAuthzInterceptor) getCustomClaims(token *jwt.Token) (*claims, err
 	//     "kaluza:kube-system",
 	//   ],
 	//
-	// and we want to get the namespaces default and kube-system.
+	// and we want to get the namespaces 'default' and 'kube-system'.
 	re := regexp.MustCompile(i.namespacesRegex)
 	var namespaces []string
 	for _, n := range rawNamespaces {
