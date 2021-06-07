@@ -27,9 +27,9 @@ func auditLog(
 
 	var msg string
 	if authorized {
-		msg = "Authorized"
+		msg = "authorized"
 	} else {
-		msg = "Blocked"
+		msg = "blocked"
 	}
 
 	log.Info().Msgf(
