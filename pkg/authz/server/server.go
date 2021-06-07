@@ -75,13 +75,13 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 	) (interface{}, error) {
 		mdr, ok := req.(RequestWithMetadata)
 		if !ok {
-			return nil, errors.New("Malformed client request")
+			return nil, status.Errorf(codes.InvalidArgument, "missing client metadata")
 		}
 
 		// errors if token is invalid (expired, bad signature or unparsable)
 		claims, err := i.parseToken(ctx)
 		if err != nil {
-			return nil, err
+			return nil, status.Errorf(codes.Unauthenticated, err.Error())
 		}
 
 		// errors if user is not authorized to manipulate a secret for the given namespace
@@ -95,7 +95,7 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 				mdr.GetMetadata().Namespace,
 				mdr.GetMetadata().Name,
 			)
-			return nil, err
+			return nil, status.Errorf(codes.PermissionDenied, err.Error())
 		}
 
 		auditLog(
@@ -118,12 +118,12 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 func (i *serverAuthzInterceptor) parseToken(ctx context.Context) (*claims, error) {
 	md, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return nil, status.Errorf(codes.Unauthenticated, "metadata is not provided")
+		return nil, errors.New("grpc metadata is not provided")
 	}
 
 	authzValues := md["authorization"]
 	if len(authzValues) == 0 {
-		return nil, status.Errorf(codes.Unauthenticated, "authorization token is not provided")
+		return nil, errors.New("authorization token is not provided")
 	}
 
 	accessToken := authzValues[0]
@@ -158,7 +158,7 @@ func (i *serverAuthzInterceptor) authorize(claims *claims, requestNamespace stri
 
 	return errors.New(
 		fmt.Sprintf(
-			"User '%s' is not authorized for namespace '%s'",
+			"user '%s' is not authorized for namespace '%s'",
 			claims.identifier,
 			requestNamespace,
 		),
@@ -186,14 +186,14 @@ func (i *serverAuthzInterceptor) getCustomClaims(token *jwt.Token) (*claims, err
 	if val, ok := payload[i.identifierKey]; ok {
 		json.Unmarshal(val, &identifier)
 	} else {
-		return nil, errors.New(fmt.Sprintf("Failed unmarshalling '%s' from token", i.identifierKey))
+		return nil, errors.New(fmt.Sprintf("failed unmarshalling '%s' from token", i.identifierKey))
 	}
 
 	var rawNamespaces []string
 	if val, ok := payload[i.namespacesKey]; ok {
 		json.Unmarshal(val, &rawNamespaces)
 	} else {
-		return nil, errors.New(fmt.Sprintf("Failed unmarshalling '%s' from token", i.namespacesKey))
+		return nil, errors.New(fmt.Sprintf("failed unmarshalling '%s' from token", i.namespacesKey))
 	}
 
 	// If we don't have a regexp to extract namespaces from the raw namespaces list, we're done
@@ -219,7 +219,7 @@ func (i *serverAuthzInterceptor) getCustomClaims(token *jwt.Token) (*claims, err
 		if len(matches) != 2 {
 			return nil, errors.New(
 				fmt.Sprintf(
-					"Failed to extract namespace from '%s' using regexp `%s`",
+					"failed to extract namespace from '%s' using regexp `%s`",
 					n,
 					i.namespacesRegex,
 				),
