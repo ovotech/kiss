@@ -6,12 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
+	"github.com/hashicorp/logutils"
 	"github.com/ovotech/kiss/client"
 )
 
@@ -46,13 +46,25 @@ var (
 		"",
 		"The name of the secret",
 	)
+	debug = flag.Bool("debug", false, "Enable debug log")
 )
 
 func main() {
 	flag.Parse()
 
+	logLevel := "WARN"
+	if *debug {
+		logLevel = "DEBUG"
+	}
+	filter := &logutils.LevelFilter{
+		Levels:   []logutils.LogLevel{"DEBUG", "WARN", "ERROR"},
+		MinLevel: logutils.LogLevel(logLevel),
+		Writer:   os.Stdout,
+	}
+	log.SetOutput(filter)
+
 	if *name == "" || *namespace == "" {
-		log.Fatal().Msgf("The -name and -namespace are required parameters.")
+		log.Fatal("[ERROR] The -name and -namespace are required parameters.")
 	}
 
 	if *tokenPath == "" {
@@ -61,13 +73,13 @@ func main() {
 		var err error
 		tokenPath, err = guessTokenPath()
 		if err != nil {
-			log.Fatal().Msgf("Failed to guess token path, use '-token-path' instead: %s", err)
+			log.Fatalf("[ERROR] Failed to guess token path, use '-token-path' instead: %s", err)
 		}
 	}
 
 	token, err := loadToken(tokenPath)
 	if err != nil {
-		log.Fatal().Msgf("Failed to load token from %s", *tokenPath)
+		log.Fatalf("[ERROR] Failed to load token from %s", *tokenPath)
 	}
 
 	client.Run(*secure, *serverAddr, *timeout, *token, *namespace, *name)
@@ -86,7 +98,7 @@ func guessTokenPath() (*string, error) {
 	}
 
 	if len(files) < 1 {
-		return nil, errors.New(fmt.Sprintf("No token file in %s", oidcPath))
+		return nil, errors.New(fmt.Sprintf("no token file in %s", oidcPath))
 	}
 
 	tokenPath := path.Join(oidcPath, files[0].Name())
@@ -114,7 +126,7 @@ func loadToken(tokenPath *string) (*string, error) {
 
 	idToken, ok := tokenMap["id_token"]
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("No 'id_token' field in token file"))
+		return nil, errors.New(fmt.Sprintf("no 'id_token' field in token file"))
 	}
 
 	return &idToken, nil

@@ -3,9 +3,9 @@ package client
 import (
 	"crypto/tls"
 	"flag"
+	"log"
 	"time"
 
-	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 
@@ -42,10 +42,10 @@ func Run(
 	)
 
 	// Establish gRPC connection
-	log.Info().Msg("Creating gRPC Dial...")
+	log.Print("[DEBUG] Creating gRPC Dial...")
 	conn, err := grpc.Dial(serverAddr, opts...)
 	if err != nil {
-		log.Fatal().Msgf("Failed to dial: %v", err)
+		log.Fatalf("[ERROR] Failed to dial: %v", err)
 	}
 	defer conn.Close()
 
