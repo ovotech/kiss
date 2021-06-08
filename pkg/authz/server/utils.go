@@ -18,7 +18,6 @@ func auditLog(
 	request string,
 	user string,
 	namespace string,
-	name string,
 ) {
 	clientIP := getRequestIPBestEffort(ctx)
 	if clientIP == nil {
@@ -33,13 +32,12 @@ func auditLog(
 	}
 
 	log.Info().Msgf(
-		"%s: %s user '%s' (from host '%s') on secret '%s/%s'",
+		"%s: %s user '%s' (from host '%s') on namespace '%s'",
 		request,
 		msg,
 		user,
 		clientIP,
 		namespace,
-		name,
 	)
 }
 

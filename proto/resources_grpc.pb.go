@@ -17,6 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type KISSClient interface {
+	// Temporary RPC to test authorization; will be removed.
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 }
 
@@ -41,6 +42,7 @@ func (c *kISSClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.Cal
 // All implementations must embed UnimplementedKISSServer
 // for forward compatibility
 type KISSServer interface {
+	// Temporary RPC to test authorization; will be removed.
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	mustEmbedUnimplementedKISSServer()
 }

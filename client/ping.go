@@ -16,7 +16,7 @@ func ping(client pb.KISSClient, timeout time.Duration, namespace string, name st
 
 	_, err := client.Ping(
 		ctx,
-		&pb.PingRequest{Metadata: &pb.ClientMeta{Namespace: namespace, Name: name}},
+		&pb.PingRequest{Metadata: &pb.ClientMeta{Namespace: namespace}},
 	)
 	if err != nil {
 		log.Fatalf("[ERROR] Error ocurred while sending ping: %v\n", err)

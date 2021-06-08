@@ -93,7 +93,6 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 				info.FullMethod,
 				claims.identifier,
 				mdr.GetMetadata().Namespace,
-				mdr.GetMetadata().Name,
 			)
 			return nil, status.Errorf(codes.PermissionDenied, err.Error())
 		}
@@ -104,7 +103,6 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 			info.FullMethod,
 			claims.identifier,
 			mdr.GetMetadata().GetNamespace(),
-			mdr.GetMetadata().GetName(),
 		)
 
 		return handler(ctx, req)

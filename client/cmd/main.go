@@ -63,8 +63,8 @@ func main() {
 	}
 	log.SetOutput(filter)
 
-	if *name == "" || *namespace == "" {
-		log.Fatal("[ERROR] The -name and -namespace are required parameters.")
+	if *namespace == "" {
+		log.Fatal("[ERROR] The -namespace is a required parameters for all commands.")
 	}
 
 	if *tokenPath == "" {

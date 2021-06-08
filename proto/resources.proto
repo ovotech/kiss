@@ -4,9 +4,10 @@ option go_package = "github.com/ovotech/kiss/proto";
 
 // Required information from client for every request
 message ClientMeta {
-    // name and namespace the secret will be scoped to
+    // k8s "namespace" the client wants to operate _for_
+    // nb: we're not actually interacting with k8s here
+    // we use tags on AWS resources to control which k8s namespace secrets are _for_
     string namespace = 1;
-    string name = 2;
 }
 
 service KISS {
