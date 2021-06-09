@@ -13,6 +13,7 @@ import (
 
 	"github.com/hashicorp/logutils"
 	"github.com/ovotech/kiss/client"
+	pb "github.com/ovotech/kiss/proto"
 )
 
 const (
@@ -50,6 +51,25 @@ var (
 )
 
 func main() {
+	initLogging()
+	validateParams()
+
+	token, err := loadToken(tokenPath)
+	if err != nil {
+		log.Fatalf("[ERROR] Failed to load token from %s", *tokenPath)
+	}
+
+	conn, err := client.GetConnection(*secure, *serverAddr, *timeout, *token)
+	if err != nil {
+		log.Fatalf("[ERROR] Error establishing connection: %s", err)
+	}
+	defer conn.Close()
+
+	kissClient := pb.NewKISSClient(conn)
+	client.Ping(kissClient, time.Second*5, *namespace, *name)
+}
+
+func initLogging() {
 	flag.Parse()
 
 	logLevel := "WARN"
@@ -62,7 +82,9 @@ func main() {
 		Writer:   os.Stdout,
 	}
 	log.SetOutput(filter)
+}
 
+func validateParams() {
 	if *namespace == "" {
 		log.Fatal("[ERROR] The -namespace is a required parameters for all commands.")
 	}
@@ -76,13 +98,6 @@ func main() {
 			log.Fatalf("[ERROR] Failed to guess token path, use '-token-path' instead: %s", err)
 		}
 	}
-
-	token, err := loadToken(tokenPath)
-	if err != nil {
-		log.Fatalf("[ERROR] Failed to load token from %s", *tokenPath)
-	}
-
-	client.Run(*secure, *serverAddr, *timeout, *token, *namespace, *name)
 }
 
 func guessTokenPath() (*string, error) {

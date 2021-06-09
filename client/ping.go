@@ -9,7 +9,7 @@ import (
 )
 
 // Temporary test function to test gRPC authorization.
-func ping(client pb.KISSClient, timeout time.Duration, namespace string, name string) {
+func Ping(client pb.KISSClient, timeout time.Duration, namespace string, name string) {
 	log.Println("[DEBUG] Sending ping...")
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
