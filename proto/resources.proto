@@ -13,6 +13,7 @@ message ClientMeta {
 service KISS {
     // Temporary RPC to test authorization; will be removed.
     rpc Ping (PingRequest) returns (PingResponse) {}
+    rpc CreateSecret(CreateSecretRequest) returns (CreateSecretResponse) {}
 }
 
 message PingRequest {
@@ -20,3 +21,10 @@ message PingRequest {
 }
 
 message PingResponse {}
+
+message CreateSecretRequest {
+    ClientMeta metadata = 1;
+    string name = 2;
+}
+
+message CreateSecretResponse {}

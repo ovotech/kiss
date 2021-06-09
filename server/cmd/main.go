@@ -6,6 +6,7 @@ import (
 
 	"github.com/rs/zerolog/log"
 
+	"github.com/ovotech/kiss/pkg/aws"
 	"github.com/ovotech/kiss/server"
 )
 
@@ -28,6 +29,26 @@ var (
 		"email",
 		"The key containing the identity of the requester in the client's JWT payload, for auditing purposes.",
 	)
+	awsWebIdTokenPath = flag.String(
+		"token-path",
+		"/var/run/secrets/eks.amazonaws.com/serviceaccount/token",
+		"Path to the AWS Web Identity Token in the pod. If empty will use default authentication instead (i.e. useful if running locally).",
+	)
+	iamRoleARN = flag.String(
+		"role-arn",
+		"",
+		"The full ARN of the AWS IAM role used by the controller.",
+	)
+	awsRegion = flag.String(
+		"region",
+		"eu-west-1",
+		"The AWS region.",
+	)
+	iamRolePrefix = flag.String(
+		"-service-account-role-prefix",
+		"k8s-sa",
+		"Prefix for service account IAM roles to be granted access to secrets. IAM roles that grant access to secrets are named '(prefix_)namespace_service-account-name' where namespace and service-account-name are supplied by clients.",
+	)
 )
 
 func main() {
@@ -36,6 +57,29 @@ func main() {
 	if *jwksURL == "" {
 		log.Fatal().Msg("-jwks-url is required, see help for more information")
 	}
+
+	var awsManager *aws.Manager
+	if *awsWebIdTokenPath == "" {
+		awsManager = aws.NewManagerWithDefaultConfig(
+			*iamRolePrefix,
+			*awsRegion,
+		)
+	} else {
+		// ARN is required for web id token auth
+		if *iamRoleARN == "" {
+			log.Fatal().Msgf(
+				"Invalid role ARN for controller when using web ID token auth: '%s'. See help for more information.",
+				iamRoleARN,
+			)
+		}
+		awsManager = aws.NewManagerWithWebIdToken(
+			*iamRolePrefix,
+			*awsRegion,
+			*iamRoleARN,
+			*awsWebIdTokenPath,
+		)
+	}
+	aws.SetManager(awsManager)
 
 	// Create notification channels
 	errChan := make(chan error)
