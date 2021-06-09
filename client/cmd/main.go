@@ -42,11 +42,6 @@ var (
 		"",
 		"The namespace the secret is scoped to.",
 	)
-	name = flag.String(
-		"name",
-		"",
-		"The name of the secret",
-	)
 	debug = flag.Bool("debug", false, "Enable debug log")
 )
 
@@ -66,7 +61,7 @@ func main() {
 	defer conn.Close()
 
 	kissClient := pb.NewKISSClient(conn)
-	client.Ping(kissClient, time.Second*5, *namespace, *name)
+	client.Ping(kissClient, time.Second*5, *namespace)
 }
 
 func initLogging() {
