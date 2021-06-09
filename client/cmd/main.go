@@ -21,54 +21,63 @@ const (
 )
 
 var (
-	secure     = flag.Bool("secure", true, "Connection uses TLS if true, else plain TCP")
-	serverAddr = flag.String(
-		"server-addr",
-		"localhost:10000",
-		"The monitor server address in the format of host:port",
-	)
-	timeout = flag.Duration(
-		"timeout",
-		30*time.Second,
-		"The interval before a connection times out",
-	)
-	tokenPath = flag.String(
-		"token-path",
-		"",
-		"The path to the OIDC JWT used for auth/z. If empty will default to the first file in $HOME/.kube/cache/oidc-login/",
-	)
-	namespace = flag.String(
-		"namespace",
-		"",
-		"The namespace the secret is scoped to.",
-	)
-	debug = flag.Bool("debug", false, "Enable debug log")
+	secure     bool
+	serverAddr string
+	timeout    time.Duration
+	tokenPath  string
+	namespace  string
+	debug      bool
+
+	pingCmd = flag.NewFlagSet("ping", flag.ExitOnError)
+
+	subcommands = map[string]*flag.FlagSet{
+		pingCmd.Name(): pingCmd,
+	}
 )
 
 func main() {
-	initLogging()
-	validateParams()
+	setupCommonFlags()
 
-	token, err := loadToken(tokenPath)
-	if err != nil {
-		log.Fatalf("[ERROR] Failed to load token from %s", *tokenPath)
+	// Parse and validate subcommand and flags
+	// The first argument on the command line is the command
+	cmd := subcommands[os.Args[1]]
+	if cmd == nil {
+		log.Fatalf("[ERROR] unknown subcommand '%s', see help for more details.", os.Args[1])
 	}
 
-	conn, err := client.GetConnection(*secure, *serverAddr, *timeout, *token)
+	// Arguments 2 onwards are flags
+	cmd.Parse(os.Args[2:])
+	validateParams()
+
+	// We initialize logging here because we need -debug from flags
+	initLogging()
+
+	token, err := loadToken(&tokenPath)
+	if err != nil {
+		log.Fatalf("[ERROR] Failed to load token from %s", tokenPath)
+	}
+
+	// Setup gRPC connection and get protobuf client
+	conn, err := client.GetConnection(secure, serverAddr, timeout, *token)
 	if err != nil {
 		log.Fatalf("[ERROR] Error establishing connection: %s", err)
 	}
 	defer conn.Close()
 
 	kissClient := pb.NewKISSClient(conn)
-	client.Ping(kissClient, time.Second*5, *namespace)
+
+	// Run subcommand
+	switch cmd.Name() {
+	case "ping":
+		client.Ping(kissClient, timeout, namespace)
+	}
+
 }
 
+// Initialize logging
 func initLogging() {
-	flag.Parse()
-
 	logLevel := "WARN"
-	if *debug {
+	if debug {
 		logLevel = "DEBUG"
 	}
 	filter := &logutils.LevelFilter{
@@ -79,12 +88,36 @@ func initLogging() {
 	log.SetOutput(filter)
 }
 
+// Set up common flags used by all commands.
+func setupCommonFlags() {
+	for _, fs := range subcommands {
+		fs.BoolVar(&secure, "secure", true, "Connection uses TLS if true, else plain TCP")
+		fs.StringVar(
+			&serverAddr,
+			"server-addr",
+			"localhost:10000",
+			"The monitor server address in the format of host:port",
+		)
+		fs.DurationVar(
+			&timeout, "timeout", 30*time.Second, "The interval before a connection times out",
+		)
+		fs.StringVar(
+			&tokenPath,
+			"token-path",
+			"",
+			"The path to the OIDC JWT used for auth/z. If empty will default to the first file in $HOME/.kube/cache/oidc-login/",
+		)
+		fs.StringVar(&namespace, "namespace", "", "The namespace the secret is scoped to.")
+		fs.BoolVar(&debug, "debug", false, "Enable debug log")
+	}
+}
+
 func validateParams() {
-	if *namespace == "" {
-		log.Fatal("[ERROR] The -namespace is a required parameters for all commands.")
+	if namespace == "" {
+		log.Fatal("[ERROR] The -namespace flag is required for all commands.")
 	}
 
-	if *tokenPath == "" {
+	if tokenPath == "" {
 		// User hasn't given us a path to a token
 		// We'll try to find it ourselves.
 		var err error
@@ -92,28 +125,29 @@ func validateParams() {
 		if err != nil {
 			log.Fatalf("[ERROR] Failed to guess token path, use '-token-path' instead: %s", err)
 		}
+		log.Printf("[DEBUG] Token not explicitly given, we'll use this one: '%s'", tokenPath)
 	}
 }
 
-func guessTokenPath() (*string, error) {
+func guessTokenPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	oidcPath := path.Join(homeDir, defaultTokenPath)
 	files, err := ioutil.ReadDir(oidcPath)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	if len(files) < 1 {
-		return nil, errors.New(fmt.Sprintf("no token file in %s", oidcPath))
+		return "", errors.New(fmt.Sprintf("no token file in %s", oidcPath))
 	}
 
 	tokenPath := path.Join(oidcPath, files[0].Name())
 
-	return &tokenPath, nil
+	return tokenPath, nil
 }
 
 func loadToken(tokenPath *string) (*string, error) {
