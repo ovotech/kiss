@@ -12,17 +12,18 @@ import (
 )
 
 const (
-	clusterTagKey   = "role.k8s.aws/cluster"
-	managedByTagKey = "role.k8s.aws/managed-by"
-	stackTagKey     = "serviceaccount.k8s.aws/stack"
+	managedByTagKey   = "security.kaluza.com/managed-by"
+	managedByTagValue = "kaluza-infrastructure-secret-service"
+	namespaceTagKey   = "security.kaluza.com/secret-namespace"
+	nameTagKey        = "security.kaluza.com/secret-name"
 )
 
 type Manager struct {
-	client      *awssm.Client
-	rolePrefix  string
-	secretPrefx string
-	accountId   string
-	ctx         context.Context
+	client       *awssm.Client
+	rolePrefix   string
+	secretPrefix string
+	accountId    string
+	ctx          context.Context
 }
 
 func NewManagerWithDefaultConfig(
@@ -47,11 +48,11 @@ func NewManagerWithDefaultConfig(
 	}
 
 	return &Manager{
-		client:      awssm.NewFromConfig(cfg),
-		rolePrefix:  rolePrefix,
-		secretPrefx: secretPrefix,
-		accountId:   *callerIdentity.Account,
-		ctx:         ctx,
+		client:       awssm.NewFromConfig(cfg),
+		rolePrefix:   rolePrefix,
+		secretPrefix: secretPrefix,
+		accountId:    *callerIdentity.Account,
+		ctx:          ctx,
 	}
 }
 
@@ -92,10 +93,10 @@ func NewManagerWithWebIdToken(
 	smClient := awssm.New(awssm.Options{Region: region, Credentials: appCreds})
 
 	return &Manager{
-		client:      smClient,
-		rolePrefix:  rolePrefix,
-		secretPrefx: secretPrefix,
-		accountId:   accountId,
-		ctx:         ctx,
+		client:       smClient,
+		rolePrefix:   rolePrefix,
+		secretPrefix: secretPrefix,
+		accountId:    accountId,
+		ctx:          ctx,
 	}
 }

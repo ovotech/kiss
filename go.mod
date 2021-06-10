@@ -9,6 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/iam v1.5.1
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.3.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.4.1
+	github.com/aws/smithy-go v1.4.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/golang/protobuf v1.4.2
 	github.com/hashicorp/logutils v1.0.0

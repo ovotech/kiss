@@ -30,8 +30,13 @@ var (
 
 	pingCmd = flag.NewFlagSet("ping", flag.ExitOnError)
 
+	createSecretCmd   = flag.NewFlagSet("create", flag.ExitOnError)
+	createSecretName  = createSecretCmd.String("name", "", "The name of the secret.")
+	createSecretValue = createSecretCmd.String("value", "", "The value of the secret.")
+
 	subcommands = map[string]*flag.FlagSet{
-		pingCmd.Name(): pingCmd,
+		pingCmd.Name():         pingCmd,
+		createSecretCmd.Name(): createSecretCmd,
 	}
 )
 
@@ -47,7 +52,7 @@ func main() {
 
 	// Arguments 2 onwards are flags
 	cmd.Parse(os.Args[2:])
-	validateParams()
+	validateCommonParams()
 
 	// We initialize logging here because we need -debug from flags
 	initLogging()
@@ -70,6 +75,10 @@ func main() {
 	switch cmd.Name() {
 	case "ping":
 		client.Ping(kissClient, timeout, namespace)
+	case "create":
+		client.CreateSecret(kissClient, timeout, namespace, *createSecretName, *createSecretValue)
+	default:
+		log.Fatalf("[ERROR] Unknown command")
 	}
 
 }
@@ -112,7 +121,7 @@ func setupCommonFlags() {
 	}
 }
 
-func validateParams() {
+func validateCommonParams() {
 	if namespace == "" {
 		log.Fatal("[ERROR] The -namespace flag is required for all commands.")
 	}
