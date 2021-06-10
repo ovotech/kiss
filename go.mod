@@ -7,6 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.3.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.2.1
 	github.com/aws/aws-sdk-go-v2/service/iam v1.5.1
+	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.3.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.4.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/golang/protobuf v1.4.2
