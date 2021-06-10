@@ -105,7 +105,9 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 			mdr.GetMetadata().GetNamespace(),
 		)
 
-		return handler(ctx, req)
+		newCtx := context.WithValue(ctx, "user", claims.identifier)
+
+		return handler(newCtx, req)
 	}
 }
 
