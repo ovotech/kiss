@@ -43,5 +43,7 @@ func (s *kissServer) CreateSecret(
 		return nil, status.Errorf(codes.Unknown, "failed to create secret for unknown reasons")
 	}
 
+	log.Info().
+		Msgf("Created secret '%s/%s' on behalf of '%s'", createSecretRequest.Metadata.Namespace, createSecretRequest.Name, ctx.Value("user"))
 	return &pb.CreateSecretResponse{}, nil
 }
