@@ -25,6 +25,7 @@ message PingResponse {}
 message CreateSecretRequest {
     ClientMeta metadata = 1;
     string name = 2;
+    string value = 3;
 }
 
 message CreateSecretResponse {}
