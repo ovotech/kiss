@@ -17,10 +17,6 @@ const (
 	stackTagKey     = "serviceaccount.k8s.aws/stack"
 )
 
-var (
-	singleton *Manager
-)
-
 type Manager struct {
 	client     *awsiam.Client
 	rolePrefix string
@@ -95,12 +91,4 @@ func NewManagerWithWebIdToken(
 		accountId: accountId,
 		ctx:       ctx,
 	}
-}
-
-func GetManager() *Manager {
-	return singleton
-}
-
-func SetManager(m *Manager) {
-	singleton = m
 }

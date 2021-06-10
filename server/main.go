@@ -15,7 +15,12 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 
 	serverauthz "github.com/ovotech/kiss/pkg/authz/server"
+	"github.com/ovotech/kiss/pkg/aws"
 	pb "github.com/ovotech/kiss/proto"
+)
+
+var (
+	AWSManager *aws.Manager
 )
 
 func init() {

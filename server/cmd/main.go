@@ -79,7 +79,7 @@ func main() {
 			*awsWebIdTokenPath,
 		)
 	}
-	aws.SetManager(awsManager)
+	server.AWSManager = awsManager
 
 	// Create notification channels
 	errChan := make(chan error)
