@@ -76,6 +76,9 @@ func main() {
 	case "ping":
 		client.Ping(kissClient, timeout, namespace)
 	case "create":
+		if *createSecretName == "" || *createSecretValue == "" {
+			log.Fatalf("[ERROR] -name and -value are required, see help for more details.")
+		}
 		client.CreateSecret(kissClient, timeout, namespace, *createSecretName, *createSecretValue)
 	default:
 		log.Fatalf("[ERROR] Unknown command")

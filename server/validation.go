@@ -14,7 +14,7 @@ func isValidString(input string) bool {
 
 // Returns true if the namespace and name are acceptable.
 func isValidNameAndNamespace(namespace, name string) bool {
-	if isValidString(namespace) && isValidString(name) {
+	if isValidString(namespace) && isValidString(name) && len(namespace) > 0 && len(name) > 0 {
 		return true
 	}
 	return false
