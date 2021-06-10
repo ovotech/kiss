@@ -18,14 +18,16 @@ const (
 )
 
 type Manager struct {
-	client     *awsiam.Client
-	rolePrefix string
-	accountId  string
-	ctx        context.Context
+	client      *awsiam.Client
+	rolePrefix  string
+	secretPrefx string
+	accountId   string
+	ctx         context.Context
 }
 
 func NewManagerWithDefaultConfig(
 	rolePrefix string,
+	secretPrefix string,
 	region string,
 ) *Manager {
 	ctx := context.Background()
@@ -45,14 +47,17 @@ func NewManagerWithDefaultConfig(
 	}
 
 	return &Manager{
-		client:    awsiam.NewFromConfig(cfg),
-		accountId: *callerIdentity.Account,
-		ctx:       ctx,
+		client:      awsiam.NewFromConfig(cfg),
+		rolePrefix:  rolePrefix,
+		secretPrefx: secretPrefix,
+		accountId:   *callerIdentity.Account,
+		ctx:         ctx,
 	}
 }
 
 func NewManagerWithWebIdToken(
 	rolePrefix string,
+	secretPrefix string,
 	region string,
 	roleARN string,
 	tokenPath string,
@@ -87,8 +92,10 @@ func NewManagerWithWebIdToken(
 	iamClient := awsiam.New(awsiam.Options{Region: region, Credentials: appCreds})
 
 	return &Manager{
-		client:    iamClient,
-		accountId: accountId,
-		ctx:       ctx,
+		client:      iamClient,
+		rolePrefix:  rolePrefix,
+		secretPrefx: secretPrefix,
+		accountId:   accountId,
+		ctx:         ctx,
 	}
 }

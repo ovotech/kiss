@@ -49,6 +49,11 @@ var (
 		"k8s-sa",
 		"Prefix for service account IAM roles to be granted access to secrets. IAM roles that grant access to secrets are named '(prefix_)namespace_service-account-name' where namespace and service-account-name are supplied by clients.",
 	)
+	secretPrefix = flag.String(
+		"-secret-prefix",
+		"k8s-secret",
+		"Prefix for managed AWS Secrets Manager secrets.",
+	)
 )
 
 func main() {
@@ -62,6 +67,7 @@ func main() {
 	if *awsWebIdTokenPath == "" {
 		awsManager = aws.NewManagerWithDefaultConfig(
 			*iamRolePrefix,
+			*secretPrefix,
 			*awsRegion,
 		)
 	} else {
@@ -74,6 +80,7 @@ func main() {
 		}
 		awsManager = aws.NewManagerWithWebIdToken(
 			*iamRolePrefix,
+			*secretPrefix,
 			*awsRegion,
 			*iamRoleARN,
 			*awsWebIdTokenPath,
