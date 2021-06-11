@@ -20,6 +20,7 @@ type KISSClient interface {
 	// Temporary RPC to test authorization; will be removed.
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	CreateSecret(ctx context.Context, in *CreateSecretRequest, opts ...grpc.CallOption) (*CreateSecretResponse, error)
+	BindSecret(ctx context.Context, in *BindSecretRequest, opts ...grpc.CallOption) (*BindSecretResponse, error)
 }
 
 type kISSClient struct {
@@ -48,6 +49,15 @@ func (c *kISSClient) CreateSecret(ctx context.Context, in *CreateSecretRequest, 
 	return out, nil
 }
 
+func (c *kISSClient) BindSecret(ctx context.Context, in *BindSecretRequest, opts ...grpc.CallOption) (*BindSecretResponse, error) {
+	out := new(BindSecretResponse)
+	err := c.cc.Invoke(ctx, "/kiss.resources.KISS/BindSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KISSServer is the server API for KISS service.
 // All implementations must embed UnimplementedKISSServer
 // for forward compatibility
@@ -55,6 +65,7 @@ type KISSServer interface {
 	// Temporary RPC to test authorization; will be removed.
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	CreateSecret(context.Context, *CreateSecretRequest) (*CreateSecretResponse, error)
+	BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error)
 	mustEmbedUnimplementedKISSServer()
 }
 
@@ -67,6 +78,9 @@ func (UnimplementedKISSServer) Ping(context.Context, *PingRequest) (*PingRespons
 }
 func (UnimplementedKISSServer) CreateSecret(context.Context, *CreateSecretRequest) (*CreateSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSecret not implemented")
+}
+func (UnimplementedKISSServer) BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method BindSecret not implemented")
 }
 func (UnimplementedKISSServer) mustEmbedUnimplementedKISSServer() {}
 
@@ -117,6 +131,24 @@ func _KISS_CreateSecret_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KISS_BindSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(BindSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KISSServer).BindSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kiss.resources.KISS/BindSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KISSServer).BindSecret(ctx, req.(*BindSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _KISS_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "kiss.resources.KISS",
 	HandlerType: (*KISSServer)(nil),
@@ -128,6 +160,10 @@ var _KISS_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateSecret",
 			Handler:    _KISS_CreateSecret_Handler,
+		},
+		{
+			MethodName: "BindSecret",
+			Handler:    _KISS_BindSecret_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

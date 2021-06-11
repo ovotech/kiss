@@ -8,7 +8,6 @@ import (
 	pb "github.com/ovotech/kiss/proto"
 )
 
-// Temporary test function to test gRPC authorization.
 func CreateSecret(client pb.KISSClient, timeout time.Duration, namespace, name, value string) {
 	log.Println("[DEBUG] Creating secret...")
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
@@ -23,7 +22,7 @@ func CreateSecret(client pb.KISSClient, timeout time.Duration, namespace, name, 
 		},
 	)
 	if err != nil {
-		log.Fatalf("[ERROR] Error ocurred while creating secret: %v\n", err)
+		log.Fatalf("[ERROR] Error occurred while creating secret: %v\n", err)
 	} else {
 		log.Println("[INFO] Successfully created secret")
 	}

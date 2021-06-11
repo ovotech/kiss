@@ -34,9 +34,18 @@ var (
 	createSecretName  = createSecretCmd.String("name", "", "The name of the secret.")
 	createSecretValue = createSecretCmd.String("value", "", "The value of the secret.")
 
+	bindSecretCmd            = flag.NewFlagSet("bind", flag.ExitOnError)
+	bindSecretName           = bindSecretCmd.String("name", "", "The name of the secret.")
+	bindSecretServiceAccount = bindSecretCmd.String(
+		"service-account",
+		"",
+		"The k8s service account that requires access to the secret.",
+	)
+
 	subcommands = map[string]*flag.FlagSet{
 		pingCmd.Name():         pingCmd,
 		createSecretCmd.Name(): createSecretCmd,
+		bindSecretCmd.Name():   bindSecretCmd,
 	}
 )
 
@@ -80,6 +89,17 @@ func main() {
 			log.Fatalf("[ERROR] -name and -value are required, see help for more details.")
 		}
 		client.CreateSecret(kissClient, timeout, namespace, *createSecretName, *createSecretValue)
+	case "bind":
+		if *bindSecretName == "" || *bindSecretServiceAccount == "" {
+			log.Fatalf("[ERROR] -name and -service-acount are required, see help for more details")
+		}
+		client.BindSecret(
+			kissClient,
+			timeout,
+			namespace,
+			*bindSecretName,
+			*bindSecretServiceAccount,
+		)
 	default:
 		log.Fatalf("[ERROR] Unknown command")
 	}

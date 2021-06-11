@@ -3,10 +3,11 @@ package errors
 import "fmt"
 
 const (
-	NotFoundErrorCode      = "NotFound"
-	NotManagedErrorCode    = "NotManaged"
-	OtherErrorCode         = "Other"
-	AlreadyExistsErrorCode = "AlreadyExists"
+	NotFoundErrorCode        = "NotFound"
+	NotManagedErrorCode      = "NotManaged"
+	OtherErrorCode           = "OtherError"
+	AlreadyExistsErrorCode   = "AlreadyExists"
+	MalformedPolicyErrorCode = "MalformedPolicy"
 )
 
 type AWSError struct {
@@ -29,6 +30,14 @@ func IsNotFound(err error) bool {
 // Returns true if the error is an AlreadyExists
 func IsAlreadyExists(err error) bool {
 	if err, ok := err.(*AWSError); ok && err.Code == AlreadyExistsErrorCode {
+		return true
+	}
+	return false
+}
+
+// Returns true if the error is an MalformedPolicy
+func IsMalformedPolicy(err error) bool {
+	if err, ok := err.(*AWSError); ok && err.Code == MalformedPolicyErrorCode {
 		return true
 	}
 	return false
