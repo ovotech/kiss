@@ -42,3 +42,10 @@ func IsMalformedPolicy(err error) bool {
 	}
 	return false
 }
+
+func IsNotManaged(err error) bool {
+	if err, ok := err.(*AWSError); ok && err.Code == NotManagedErrorCode {
+		return true
+	}
+	return false
+}

@@ -42,6 +42,8 @@ func (s *kissServer) BindSecret(
 				codes.NotFound,
 				"Couldn't find a secret with the supplied name.",
 			)
+		} else if awserrors.IsNotManaged(err) {
+			return nil, status.Error(codes.InvalidArgument, "The secret exists but is not managed by this application.")
 		}
 		return nil, status.Errorf(codes.Unknown, "failed to bind secret for unknown reasons")
 	}
