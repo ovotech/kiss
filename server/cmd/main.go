@@ -45,12 +45,12 @@ var (
 		"The AWS region.",
 	)
 	iamRolePrefix = flag.String(
-		"-service-account-role-prefix",
+		"service-account-role-prefix",
 		"k8s-sa",
 		"Prefix for service account IAM roles to be granted access to secrets. IAM roles that grant access to secrets are named '(prefix_)namespace_service-account-name' where namespace and service-account-name are supplied by clients.",
 	)
 	secretPrefix = flag.String(
-		"-secret-prefix",
+		"secret-prefix",
 		"k8s-secret",
 		"Prefix for managed AWS Secrets Manager secrets.",
 	)
