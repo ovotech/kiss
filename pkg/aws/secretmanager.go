@@ -98,7 +98,7 @@ func (m *Manager) BindSecret(namespace, name, serviceAccountName string) error {
 	}
 
 	secretName := secret.Name
-	serviceAccountARN := m.makeRoleARN(namespace, serviceAccountName)
+	serviceAccountARN := m.makeServiceAccountRoleARN(namespace, serviceAccountName)
 	policy := m.makeSecretPolicy(serviceAccountARN)
 
 	_, err = m.smclient.PutResourcePolicy(

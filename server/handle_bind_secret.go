@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 
-	awserrors "github.com/ovotech/kiss/pkg/aws/errors"
 	pb "github.com/ovotech/kiss/proto"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
@@ -11,6 +10,7 @@ import (
 )
 
 // Handles BindSecretRequests
+// Attaches a policy to a ServiceAccount IAM role.
 func (s *kissServer) BindSecret(
 	ctx context.Context,
 	bindSecretRequest *pb.BindSecretRequest,
@@ -24,7 +24,7 @@ func (s *kissServer) BindSecret(
 		)
 	}
 
-	err := AWSManager.BindSecret(
+	err := AWSManager.AttachIAMPolicy(
 		bindSecretRequest.Metadata.Namespace,
 		bindSecretRequest.Name,
 		bindSecretRequest.ServiceAccountName,
@@ -32,19 +32,6 @@ func (s *kissServer) BindSecret(
 
 	if err != nil {
 		log.Info().Msgf("Error creating secret: %v", err)
-		if awserrors.IsMalformedPolicy(err) {
-			return nil, status.Error(
-				codes.InvalidArgument,
-				"Got a malformed policy error from AWS. This can happen when the service account role doesn't exist. Check the service account name and contact an admin if the problem perists.",
-			)
-		} else if awserrors.IsNotFound(err) {
-			return nil, status.Error(
-				codes.NotFound,
-				"Couldn't find a secret with the supplied name.",
-			)
-		} else if awserrors.IsNotManaged(err) {
-			return nil, status.Error(codes.InvalidArgument, "The secret exists but is not managed by this application.")
-		}
 		return nil, status.Errorf(codes.Unknown, "failed to bind secret for unknown reasons")
 	}
 

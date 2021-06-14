@@ -29,7 +29,7 @@ func (m *Manager) makeSecretIAMPolicy(arn string) string {
 
 // Create an IAM policy that allows reading a secret with the provided namespace/name and ARN
 func (m *Manager) CreateSecretIAMPolicy(namespace, name, arn string) error {
-	secretName := m.makeSecretName(namespace, name)
+	policyName := m.makeSecretPolicyName(namespace, name)
 	policy := m.makeSecretIAMPolicy(arn)
 
 	tags := []iamtypes.Tag{
@@ -40,7 +40,23 @@ func (m *Manager) CreateSecretIAMPolicy(namespace, name, arn string) error {
 
 	_, err := m.iamclient.CreatePolicy(
 		m.ctx,
-		&iam.CreatePolicyInput{PolicyDocument: &policy, PolicyName: &secretName, Tags: tags},
+		&iam.CreatePolicyInput{PolicyDocument: &policy, PolicyName: &policyName, Tags: tags},
+	)
+	if err != nil {
+		return &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
+	}
+
+	return nil
+}
+
+// Attach a secret's IAM policy to a service account IAM role
+func (m *Manager) AttachIAMPolicy(namespace, name, serviceAccountName string) error {
+	policyARN := m.makeSecretPolicyARN(namespace, name)
+	serviceAccountRoleName := m.makeServiceAccountRoleName(namespace, serviceAccountName)
+
+	_, err := m.iamclient.AttachRolePolicy(
+		m.ctx,
+		&iam.AttachRolePolicyInput{PolicyArn: &policyARN, RoleName: &serviceAccountRoleName},
 	)
 	if err != nil {
 		return &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
