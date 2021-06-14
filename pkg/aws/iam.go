@@ -17,7 +17,12 @@ func (m *Manager) makeSecretIAMPolicy(arn string) string {
 		"Statement": {
 			"Effect": "Allow",
 			"Action": "secretsmanager:GetSecretValue",
-			"Resource": "%s"
+			"Resource": "%s",
+			"Condition": {
+				"ForAnyValue:StringEquals": {
+					"secretsmanager:VersionStage" : "AWSCURRENT"
+				}
+      		}
 		}
 	}`, arn)
 }
