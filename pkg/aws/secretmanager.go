@@ -32,15 +32,6 @@ func (m *Manager) makeSecretPolicy(serviceAccountARN string) string {
 }`, serviceAccountARN)
 }
 
-// Returns the name for the secret, as used in AWS. This is a string with the format:
-// (prefix_)namespace_name
-func (m *Manager) makeSecretName(namespace, name string) string {
-	if m.secretPrefix == "" {
-		return fmt.Sprintf("%s_%s", namespace, name)
-	}
-	return fmt.Sprintf("%s_%s_%s", m.secretPrefix, namespace, name)
-}
-
 // Create a secret with the given string value. The secret will be logically scoped to the provided
 // namespace (i.e. will only bind to service account roles also in that namespace).
 func (m *Manager) CreateSecret(namespace, name, value string) error {
