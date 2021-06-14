@@ -21,6 +21,7 @@ type KISSClient interface {
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	CreateSecret(ctx context.Context, in *CreateSecretRequest, opts ...grpc.CallOption) (*CreateSecretResponse, error)
 	BindSecret(ctx context.Context, in *BindSecretRequest, opts ...grpc.CallOption) (*BindSecretResponse, error)
+	CreateSecretIAMPolicy(ctx context.Context, in *CreateSecretIAMPolicyRequest, opts ...grpc.CallOption) (*CreateSecretIAMPolicyResponse, error)
 }
 
 type kISSClient struct {
@@ -58,6 +59,15 @@ func (c *kISSClient) BindSecret(ctx context.Context, in *BindSecretRequest, opts
 	return out, nil
 }
 
+func (c *kISSClient) CreateSecretIAMPolicy(ctx context.Context, in *CreateSecretIAMPolicyRequest, opts ...grpc.CallOption) (*CreateSecretIAMPolicyResponse, error) {
+	out := new(CreateSecretIAMPolicyResponse)
+	err := c.cc.Invoke(ctx, "/kiss.resources.KISS/CreateSecretIAMPolicy", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // KISSServer is the server API for KISS service.
 // All implementations must embed UnimplementedKISSServer
 // for forward compatibility
@@ -66,6 +76,7 @@ type KISSServer interface {
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	CreateSecret(context.Context, *CreateSecretRequest) (*CreateSecretResponse, error)
 	BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error)
+	CreateSecretIAMPolicy(context.Context, *CreateSecretIAMPolicyRequest) (*CreateSecretIAMPolicyResponse, error)
 	mustEmbedUnimplementedKISSServer()
 }
 
@@ -81,6 +92,9 @@ func (UnimplementedKISSServer) CreateSecret(context.Context, *CreateSecretReques
 }
 func (UnimplementedKISSServer) BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BindSecret not implemented")
+}
+func (UnimplementedKISSServer) CreateSecretIAMPolicy(context.Context, *CreateSecretIAMPolicyRequest) (*CreateSecretIAMPolicyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateSecretIAMPolicy not implemented")
 }
 func (UnimplementedKISSServer) mustEmbedUnimplementedKISSServer() {}
 
@@ -149,6 +163,24 @@ func _KISS_BindSecret_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KISS_CreateSecretIAMPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSecretIAMPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KISSServer).CreateSecretIAMPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kiss.resources.KISS/CreateSecretIAMPolicy",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KISSServer).CreateSecretIAMPolicy(ctx, req.(*CreateSecretIAMPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _KISS_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "kiss.resources.KISS",
 	HandlerType: (*KISSServer)(nil),
@@ -164,6 +196,10 @@ var _KISS_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "BindSecret",
 			Handler:    _KISS_BindSecret_Handler,
+		},
+		{
+			MethodName: "CreateSecretIAMPolicy",
+			Handler:    _KISS_CreateSecretIAMPolicy_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

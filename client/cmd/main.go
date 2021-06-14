@@ -89,6 +89,7 @@ func main() {
 			log.Fatalf("[ERROR] -name and -value are required, see help for more details.")
 		}
 		client.CreateSecret(kissClient, timeout, namespace, *createSecretName, *createSecretValue)
+		client.CreateSecretIAMPolicy(kissClient, timeout, namespace, *createSecretName)
 	case "bind":
 		if *bindSecretName == "" || *bindSecretServiceAccount == "" {
 			log.Fatalf("[ERROR] -name and -service-acount are required, see help for more details")
