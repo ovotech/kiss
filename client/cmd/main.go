@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -175,7 +174,7 @@ func guessTokenPath() (string, error) {
 	}
 
 	if len(files) < 1 {
-		return "", errors.New(fmt.Sprintf("no token file in %s", oidcPath))
+		return "", fmt.Errorf("no token file in %s", oidcPath)
 	}
 
 	tokenPath := path.Join(oidcPath, files[0].Name())
@@ -203,7 +202,7 @@ func loadToken(tokenPath *string) (*string, error) {
 
 	idToken, ok := tokenMap["id_token"]
 	if !ok {
-		return nil, errors.New(fmt.Sprintf("no 'id_token' field in token file"))
+		return nil, fmt.Errorf("no 'id_token' field in token file")
 	}
 
 	return &idToken, nil
