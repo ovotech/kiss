@@ -82,43 +82,6 @@ func (m *Manager) GetSecret(namespace, name string) (*sm.DescribeSecretOutput, e
 	return secretOutput, nil
 }
 
-// Bind secret to a given service account. This modifies the secret's resource-based policy to allow
-// it to be read by the relevant service account role.
-func (m *Manager) BindSecret(namespace, name, serviceAccountName string) error {
-	secret, err := m.GetSecret(namespace, name)
-	if err != nil {
-		return err
-	}
-
-	if !m.isManagedSecret(secret) {
-		return &awserrors.AWSError{
-			Code:    awserrors.NotManagedErrorCode,
-			Message: "The resource is not managed by this service. Refusing to modify it.",
-		}
-	}
-
-	secretName := secret.Name
-	serviceAccountARN := m.makeServiceAccountRoleARN(namespace, serviceAccountName)
-	policy := m.makeSecretPolicy(serviceAccountARN)
-
-	_, err = m.smclient.PutResourcePolicy(
-		m.ctx,
-		&sm.PutResourcePolicyInput{ResourcePolicy: &policy, SecretId: secretName},
-	)
-	if err != nil {
-		var ae smithy.APIError
-		if errors.As(err, &ae) && ae.ErrorCode() == "MalformedPolicyDocumentException" {
-			return &awserrors.AWSError{
-				Code:    awserrors.MalformedPolicyErrorCode,
-				Message: "Got a malformed policy error from AWS. This can happen when the service account role doesn't exist.",
-			}
-		}
-		return &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
-	}
-
-	return nil
-}
-
 func (m *Manager) isManagedSecret(secretOutput *sm.DescribeSecretOutput) bool {
 	for _, tag := range secretOutput.Tags {
 		if *tag.Key == managedByTagKey && *tag.Value == managedByTagValue {
