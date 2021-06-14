@@ -7,6 +7,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
+	awsiam "github.com/aws/aws-sdk-go-v2/service/iam"
 	awssm "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	awssts "github.com/aws/aws-sdk-go-v2/service/sts"
 )
@@ -20,6 +21,7 @@ const (
 
 type Manager struct {
 	smclient     *awssm.Client
+	iamclient    *awsiam.Client
 	rolePrefix   string
 	secretPrefix string
 	accountId    string
@@ -49,6 +51,7 @@ func NewManagerWithDefaultConfig(
 
 	return &Manager{
 		smclient:     awssm.NewFromConfig(cfg),
+		iamclient:    awsiam.NewFromConfig(cfg),
 		rolePrefix:   rolePrefix,
 		secretPrefix: secretPrefix,
 		accountId:    *callerIdentity.Account,
@@ -91,9 +94,11 @@ func NewManagerWithWebIdToken(
 
 	// get iam client for manager
 	smClient := awssm.New(awssm.Options{Region: region, Credentials: appCreds})
+	iamClient := awsiam.New(awsiam.Options{Region: region, Credentials: appCreds})
 
 	return &Manager{
 		smclient:     smClient,
+		iamclient:    iamClient,
 		rolePrefix:   rolePrefix,
 		secretPrefix: secretPrefix,
 		accountId:    accountId,
