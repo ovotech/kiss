@@ -18,3 +18,12 @@ func (m *Manager) makeRoleARN(namespace, name string) string {
 	roleName := m.makeIAMRoleName(namespace, name)
 	return fmt.Sprintf("arn:aws:iam::%s:role/%s", m.accountId, roleName)
 }
+
+// Returns the name for the secret, as used in AWS. This is a string with the format:
+// (prefix_)namespace_name
+func (m *Manager) makeSecretName(namespace, name string) string {
+	if m.secretPrefix == "" {
+		return fmt.Sprintf("%s_%s", namespace, name)
+	}
+	return fmt.Sprintf("%s_%s_%s", m.secretPrefix, namespace, name)
+}
