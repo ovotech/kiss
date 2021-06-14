@@ -19,7 +19,7 @@ const (
 )
 
 type Manager struct {
-	client       *awssm.Client
+	smclient     *awssm.Client
 	rolePrefix   string
 	secretPrefix string
 	accountId    string
@@ -48,7 +48,7 @@ func NewManagerWithDefaultConfig(
 	}
 
 	return &Manager{
-		client:       awssm.NewFromConfig(cfg),
+		smclient:     awssm.NewFromConfig(cfg),
 		rolePrefix:   rolePrefix,
 		secretPrefix: secretPrefix,
 		accountId:    *callerIdentity.Account,
@@ -93,7 +93,7 @@ func NewManagerWithWebIdToken(
 	smClient := awssm.New(awssm.Options{Region: region, Credentials: appCreds})
 
 	return &Manager{
-		client:       smClient,
+		smclient:     smClient,
 		rolePrefix:   rolePrefix,
 		secretPrefix: secretPrefix,
 		accountId:    accountId,

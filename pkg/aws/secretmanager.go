@@ -68,7 +68,7 @@ func (m *Manager) CreateSecret(namespace, name, value string) error {
 		{Key: ref.String(nameTagKey), Value: &name},
 	}
 
-	_, err := m.client.CreateSecret(
+	_, err := m.smclient.CreateSecret(
 		m.ctx,
 		&sm.CreateSecretInput{Name: &secretName, SecretString: &value, Tags: tags},
 	)
@@ -90,7 +90,7 @@ func (m *Manager) CreateSecret(namespace, name, value string) error {
 func (m *Manager) GetSecret(namespace, name string) (*sm.DescribeSecretOutput, error) {
 	secretName := m.makeSecretName(namespace, name)
 
-	secretOutput, err := m.client.DescribeSecret(
+	secretOutput, err := m.smclient.DescribeSecret(
 		m.ctx,
 		&sm.DescribeSecretInput{SecretId: &secretName},
 	)
@@ -127,7 +127,7 @@ func (m *Manager) BindSecret(namespace, name, serviceAccountName string) error {
 	serviceAccountARN := m.makeRoleARN(namespace, serviceAccountName)
 	policy := m.makeSecretPolicy(serviceAccountARN)
 
-	_, err = m.client.PutResourcePolicy(
+	_, err = m.smclient.PutResourcePolicy(
 		m.ctx,
 		&sm.PutResourcePolicyInput{ResourcePolicy: &policy, SecretId: secretName},
 	)
