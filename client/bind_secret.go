@@ -13,7 +13,7 @@ func BindSecret(
 	timeout time.Duration,
 	namespace, name, serviceAccountName string,
 ) {
-	log.Println("[DEBUG] Creating secret...")
+	log.Println("[DEBUG] Binding secret to service acccount...")
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -26,8 +26,8 @@ func BindSecret(
 		},
 	)
 	if err != nil {
-		log.Fatalf("[ERROR] Error occurred while binding secret: %v\n", err)
+		log.Fatalf("[ERROR] Error occurred while binding secret to service account: %v\n", err)
 	} else {
-		log.Println("[INFO] Successfully bound secret")
+		log.Println("[INFO] Successfully bound secret to service account")
 	}
 }
