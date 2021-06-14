@@ -11,23 +11,6 @@ import (
 	"github.com/ovotech/kiss/pkg/ref"
 )
 
-// Returns the name for the role, as used in AWS. This is a string with the format:
-// (prefix_)namespace_name
-func (m *Manager) makeIAMRoleName(namespace, name string) string {
-	if m.rolePrefix == "" {
-		return fmt.Sprintf("%s_%s", namespace, name)
-	}
-	return fmt.Sprintf("%s_%s_%s", m.rolePrefix, namespace, name)
-}
-
-// makeRoleARN returns the AWS ARN for a role given the k8s ServieAccount namespace/name. Note that
-// this is an ARN generated locally from the name and namespace strings and is not an ARN looked up
-// on AWS. As such this role may or may not exist in AWS.
-func (m *Manager) makeRoleARN(namespace, name string) string {
-	roleName := m.makeIAMRoleName(namespace, name)
-	return fmt.Sprintf("arn:aws:iam::%s:role/%s", m.accountId, roleName)
-}
-
 // TODO modify this to support multiple bindings to the same secret. Right now we can only support
 // one secret.
 func (m *Manager) makeSecretPolicy(serviceAccountARN string) string {
@@ -116,7 +99,7 @@ func (m *Manager) BindSecret(namespace, name, serviceAccountName string) error {
 		return err
 	}
 
-	if !m.isManaged(secret) {
+	if !m.isManagedSecret(secret) {
 		return &awserrors.AWSError{
 			Code:    awserrors.NotManagedErrorCode,
 			Message: "The resource is not managed by this service. Refusing to modify it.",
@@ -145,7 +128,7 @@ func (m *Manager) BindSecret(namespace, name, serviceAccountName string) error {
 	return nil
 }
 
-func (m *Manager) isManaged(secretOutput *sm.DescribeSecretOutput) bool {
+func (m *Manager) isManagedSecret(secretOutput *sm.DescribeSecretOutput) bool {
 	for _, tag := range secretOutput.Tags {
 		if *tag.Key == managedByTagKey && *tag.Value == managedByTagValue {
 			return true
