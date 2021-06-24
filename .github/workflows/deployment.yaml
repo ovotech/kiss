@@ -13,34 +13,49 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: eu-west-1
-    - name: Get account ID
-      id: get_account_id
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: kaluza_infrastructure_secret_service_server
+        IMAGE_TAG: ${{ github.sha }}
       run: |
-        echo ::set-output name=AWS_ACCOUNT_ID::$(aws sts get-caller-identity | jq -r '.Account')
-    - name: Get the tag
-      id: get_tag
-      run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
-    - name: Get the commit
-      id: get_commit
-      run: echo ::set-output name=TAG::${GITHUB_SHA} 
-    # - name: Build image
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    # - name: Get account ID
+    #   id: get_account_id
     #   run: |
-    #     docker build . -f server/Dockerfile -t ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_commit.outputs.TAG }}
-    - name: debug tag
-      run: |
-        echo ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_commit.outputs.TAG }} | base64
+    #     echo ::set-output name=AWS_ACCOUNT_ID::$(aws sts get-caller-identity | jq -r '.Account')
+    # - name: Get the tag
+    #   id: get_tag
+    #   run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+    # - name: Get the commit
+    #   id: get_commit
+    #   run: echo ::set-output name=TAG::${GITHUB_SHA} 
+    # # - name: Build image
+    # #   run: |
+    # #     docker build . -f server/Dockerfile -t ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_commit.outputs.TAG }}
+    # - name: debug tag
+    #   run: |
+    #     echo ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_commit.outputs.TAG }} | base64
     # - name: Get ECR token
     #   id: get_ecr_token
     #   run: echo ::set-output name=ECR_TOKEN::$(aws ecr get-login-password)
-    # - name: Login to ECR
-    #   run: |
-    #     docker login --username AWS --password ${{ steps.get_ecr_token.outputs.ECR_TOKEN }} ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com
-    # - name: Push image to ECR
-    #   run: |
-    #     docker push ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_commit.outputs.TAG }}
+    # # - name: Login to ECR
+    # #   run: |
+    # #     docker login --username AWS --password ${{ steps.get_ecr_token.outputs.ECR_TOKEN }} ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com
+    # # - name: Push image to ECR
+    # #   run: |
+    # #     docker push ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_commit.outputs.TAG }}
