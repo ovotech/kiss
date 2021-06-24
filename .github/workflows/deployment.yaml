@@ -35,6 +35,9 @@ jobs:
     - name: Get ECR token
       id: get_ecr_token
       run: echo ::set-output name=ECR_TOKEN::$(aws ecr get-login-password)
-    - name: Docker login
+    - name: Login to ECR
       run: |
         docker login --username AWS --password ${{ steps.get_ecr_token.outputs.ECR_TOKEN }} ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com
+    - name: Push image to ECR
+      run: |
+        docker push ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_commit.outputs.TAG }}
