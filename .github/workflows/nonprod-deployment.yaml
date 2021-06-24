@@ -1,14 +1,14 @@
 name: nonprod-deployment
 
-on: [pull_request]
-  # workflow_run:
-  #   workflows: ["integration"]
-  #   types: ["completed"]
+on:
+  workflow_run:
+    workflows: ["integration"]
+    types: ["completed"]
 
 jobs:
   build:
-    # only run this if the workflow dependency was a success
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # only run this job if the dependency workflow was a success
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     env:
       ECR_REPOSITORY: kiss-server
