@@ -2,8 +2,8 @@ name: build-nonprod
 
 on:
   workflow_run:
-    workflows: ["integration"]
-    types: ["completed"]
+    workflows: [integration]
+    types: [completed]
 
 jobs:
   build:
