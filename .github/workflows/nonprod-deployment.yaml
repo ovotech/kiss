@@ -2,14 +2,13 @@ name: nonprod-deployment
 
 on:
   workflow_run:
-    workflows: ["integration"]
-    types: 
-      - completed
+    # workflows: ["integration"]
+    types: ["completed"]
 
 jobs:
   build:
     # only run this if the workflow dependency was a success
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
