@@ -75,7 +75,7 @@ func main() {
 		if *iamRoleARN == "" {
 			log.Fatal().Msgf(
 				"Invalid role ARN for controller when using web ID token auth: '%s'. See help for more information.",
-				iamRoleARN,
+				*iamRoleARN,
 			)
 		}
 		awsManager = aws.NewManagerWithWebIdToken(
