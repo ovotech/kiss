@@ -1,21 +1,22 @@
-name: deployment
+name: nonprod-deployment
 
-on: [pull_request]
-  # release:
-  #   types:
-  #     - created
-  #   tags:
-  #     - 'v*.*.*-nonprod'
+on:
+  workflow_run:
+    workflows: ["integration"]
+    types: 
+      - completed
 
 jobs:
   build:
+    # only run this if the workflow dependency was a success
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-      # this makes caching easier:
-      # https://www.docker.com/blog/docker-github-actions/
+    # using this action makes Docker layer caching easier:
+    # https://www.docker.com/blog/docker-github-actions/
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
@@ -38,15 +39,6 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    # - name: Build, tag, and push image to Amazon ECR
-    #   env:
-    #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-    #     ECR_REPOSITORY: kaluza_infrastructure_secret_service_server
-    #     IMAGE_TAG: ${{ github.sha }}
-    #   run: |
-    #     docker build -f server/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-    #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
@@ -58,8 +50,8 @@ jobs:
         cache-to: type=local,dest=/tmp/.buildx-cache-new
         builder: ${{ steps.buildx.outputs.name }}
 
-      # prevent cache from growing too large
-      # https://github.com/docker/build-push-action/issues/252
+    # prevent cache from growing too large
+    # https://github.com/docker/build-push-action/issues/252
     - name: Move cache
       run: |
         rm -rf /tmp/.buildx-cache
