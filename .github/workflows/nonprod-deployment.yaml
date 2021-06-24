@@ -61,8 +61,7 @@ jobs:
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-    # - name: Get account ID
+     # - name: Get account ID
     #   id: get_account_id
     #   run: |
     #     echo ::set-output name=AWS_ACCOUNT_ID::$(aws sts get-caller-identity | jq -r '.Account')
