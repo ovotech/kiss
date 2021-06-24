@@ -1,18 +1,24 @@
 name: nonprod-deployment
 
-on:
-  workflow_run:
-    # workflows: ["integration"]
-    types: ["completed"]
+on: [pull_request]
+  # workflow_run:
+  #   workflows: ["integration"]
+  #   types: ["completed"]
 
 jobs:
   build:
     # only run this if the workflow dependency was a success
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    env:
+      ECR_REPOSITORY: kaluza_infrastructure_secret_service_server
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: Compute short SHA
+      id: short_sha
+      run: echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
 
     # using this action makes Docker layer caching easier:
     # https://www.docker.com/blog/docker-github-actions/
@@ -44,7 +50,7 @@ jobs:
         context: ./
         file: server/Dockerfile
         push: true
-        tags: ${{ steps.login-ecr.outputs.registry }}/kaluza_infrastructure_secret_service_server:${{ github.sha }}
+        tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.short_sha.outputs.short_sha }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new
         builder: ${{ steps.buildx.outputs.name }}
