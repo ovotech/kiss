@@ -1,4 +1,4 @@
-name: nonprod-deployment
+name: build-nonprod
 
 on:
   workflow_run:
