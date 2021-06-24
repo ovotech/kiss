@@ -38,14 +38,32 @@ jobs:
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
 
-    - name: Build, tag, and push image to Amazon ECR
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: kaluza_infrastructure_secret_service_server
-        IMAGE_TAG: ${{ github.sha }}
+    # - name: Build, tag, and push image to Amazon ECR
+    #   env:
+    #     ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+    #     ECR_REPOSITORY: kaluza_infrastructure_secret_service_server
+    #     IMAGE_TAG: ${{ github.sha }}
+    #   run: |
+    #     docker build -f server/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+    #     docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        file: server/Dockerfile
+        push: true
+        tags: ${{ steps.login-ecr.outputs.registry }}/kaluza_infrastructure_secret_service_server:${{ github.sha }}
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new
+        builder: ${{ steps.buildx.outputs.name }}
+
+      # prevent cache from growing too large
+      # https://github.com/docker/build-push-action/issues/252
+    - name: Move cache
       run: |
-        docker build -f server/Dockerfile -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
     # - name: Get account ID
     #   id: get_account_id
