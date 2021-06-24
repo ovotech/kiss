@@ -1,0 +1,38 @@
+name: integration
+
+on: [pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.14
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Lint code
+      run: test -z $(gofmt -l .)
+    - name: Linting failed
+      if: ${{ failure() }}
+      run: gofmt -d -l .
+    
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.14
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: go-${{ hashFiles('**/go.sum') }}
+        restore-keys: go-
+    - name: Run tests
+      run: go test ./...
