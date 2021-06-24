@@ -228,5 +228,5 @@ func (i *serverAuthzInterceptor) getCustomClaims(token *jwt.Token) (*claims, err
 		namespaces = append(namespaces, matches[1])
 	}
 
-return &claims{identifier: identifier, namespaces: namespaces}, nil
+	return &claims{identifier: identifier, namespaces: namespaces}, nil
 }
