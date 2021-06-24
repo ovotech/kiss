@@ -1,16 +1,18 @@
 name: deployment
 
-on:
-  release:
-    types:
-      - created
-    tags:
-      - 'v*.*.*-nonprod'
+on: [pull_request]
+  # release:
+  #   types:
+  #     - created
+  #   tags:
+  #     - 'v*.*.*-nonprod'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -24,6 +26,9 @@ jobs:
     - name: Get the tag
       id: get_tag
       run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+    - name: Get the commit
+      id: get_commit
+      run: echo ::set-output name=TAG::${GITHUB_SHA} 
     - name: Build image
       run: |
-        docker build . -f server/Dockerfile -t ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_tag.outputs.TAG }}
+        docker build . -f server/Dockerfile -t ${{ steps.get_account_id.outputs.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-1.amazonaws.com/kaluza_infrastructure_secret_service_server:${{ steps.get_commit.outputs.TAG }}
