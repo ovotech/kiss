@@ -171,7 +171,7 @@ func (i *serverAuthzInterceptor) authorize(claims *claims, requestNamespace stri
 // Note: this function does _not_ validate the token.
 func (i *serverAuthzInterceptor) getCustomClaims(token *jwt.Token) (*claims, error) {
 	b64Payload := strings.Split(token.Raw, ".")[1]
-	strPayload, err := b64.StdEncoding.DecodeString(b64Payload)
+	strPayload, err := b64.RawStdEncoding.DecodeString(b64Payload)
 	if err != nil {
 		return nil, err
 	}
