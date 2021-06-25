@@ -13,10 +13,11 @@ jobs:
     env:
       ECR_REPOSITORY: kiss-server
     steps:
-    - name: Debug
-      run: cat foo
     - name: Checkout code
       uses: actions/checkout@v2
+
+    - name: Debug
+      run: cat foo
 
     - name: Compute short SHA
       id: short_sha
