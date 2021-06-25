@@ -1,3 +1,10 @@
+# IMPORTANT NOTE BEFORE IMPLEMENTING BUILD-PROD
+# I believe this approach using `workflow_run` will introduce an accidental
+# "privilege escalation" once we use environments to restrict secrets
+# when doing `workflow_run` the context of the workflow will be the default (protected) branch
+# here we're doing a hacky get-around by checking out the head_branch in checkout
+# TL;DR - need to rethink this when we do prod builds and potentially use `workflow_dispatch`
+
 name: build-nonprod
 
 on:
@@ -17,9 +24,6 @@ jobs:
       uses: actions/checkout@v2
       with:
         ref: ${{ github.event.workflow_run.head_branch }}
-
-    - name: Debug
-      run: cat foo
 
     - name: Compute short SHA
       id: short_sha
