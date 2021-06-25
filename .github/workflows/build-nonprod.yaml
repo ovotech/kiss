@@ -25,9 +25,6 @@ jobs:
       with:
         ref: ${{ github.event.workflow_run.head_branch }}
 
-    - name: Debug
-      run: cat foo
-
     - name: Compute short SHA
       id: short_sha
       run: echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
