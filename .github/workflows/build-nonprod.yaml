@@ -13,6 +13,8 @@ jobs:
     env:
       ECR_REPOSITORY: kiss-server
     steps:
+    - name: Debug
+      run: cat foo
     - name: Checkout code
       uses: actions/checkout@v2
 
