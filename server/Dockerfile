@@ -13,7 +13,7 @@ WORKDIR ${PROJECT_DIR}/server/cmd
 RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 \
     go build -ldflags="-w -s" -o /go/bin/kiss-server
 
-FROM scratch
+FROM golang:1.15-alpine 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/kiss-server /go/bin/kiss-server
 COPY --from=builder /passwd /group /etc/
