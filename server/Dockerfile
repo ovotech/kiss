@@ -17,5 +17,5 @@ FROM golang:1.15-alpine
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /go/bin/kiss-server /go/bin/kiss-server
 COPY --from=builder /passwd /group /etc/
-USER application
+# USER application
 ENTRYPOINT ["/go/bin/kiss-server"]
