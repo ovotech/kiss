@@ -23,7 +23,7 @@ func ListSecrets(client pb.KISSClient, timeout time.Duration, namespace string) 
 	} else {
 		log.Println("[INFO] Listing secrets:")
 		for _, secret := range response.Secrets {
-			log.Println(secret)
+			log.Printf("[INFO] %s", secret)
 		}
 	}
 }
