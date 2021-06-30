@@ -20,6 +20,7 @@ type KISSClient interface {
 	// Temporary RPC to test authorization; will be removed.
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	CreateSecret(ctx context.Context, in *CreateSecretRequest, opts ...grpc.CallOption) (*CreateSecretResponse, error)
+	ListSecrets(ctx context.Context, in *ListSecretsRequest, opts ...grpc.CallOption) (*ListSecretsResponse, error)
 	BindSecret(ctx context.Context, in *BindSecretRequest, opts ...grpc.CallOption) (*BindSecretResponse, error)
 	CreateSecretIAMPolicy(ctx context.Context, in *CreateSecretIAMPolicyRequest, opts ...grpc.CallOption) (*CreateSecretIAMPolicyResponse, error)
 }
@@ -44,6 +45,15 @@ func (c *kISSClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.Cal
 func (c *kISSClient) CreateSecret(ctx context.Context, in *CreateSecretRequest, opts ...grpc.CallOption) (*CreateSecretResponse, error) {
 	out := new(CreateSecretResponse)
 	err := c.cc.Invoke(ctx, "/kiss.resources.KISS/CreateSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *kISSClient) ListSecrets(ctx context.Context, in *ListSecretsRequest, opts ...grpc.CallOption) (*ListSecretsResponse, error) {
+	out := new(ListSecretsResponse)
+	err := c.cc.Invoke(ctx, "/kiss.resources.KISS/ListSecrets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +85,7 @@ type KISSServer interface {
 	// Temporary RPC to test authorization; will be removed.
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	CreateSecret(context.Context, *CreateSecretRequest) (*CreateSecretResponse, error)
+	ListSecrets(context.Context, *ListSecretsRequest) (*ListSecretsResponse, error)
 	BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error)
 	CreateSecretIAMPolicy(context.Context, *CreateSecretIAMPolicyRequest) (*CreateSecretIAMPolicyResponse, error)
 	mustEmbedUnimplementedKISSServer()
@@ -89,6 +100,9 @@ func (UnimplementedKISSServer) Ping(context.Context, *PingRequest) (*PingRespons
 }
 func (UnimplementedKISSServer) CreateSecret(context.Context, *CreateSecretRequest) (*CreateSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSecret not implemented")
+}
+func (UnimplementedKISSServer) ListSecrets(context.Context, *ListSecretsRequest) (*ListSecretsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListSecrets not implemented")
 }
 func (UnimplementedKISSServer) BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BindSecret not implemented")
@@ -145,6 +159,24 @@ func _KISS_CreateSecret_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KISS_ListSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSecretsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KISSServer).ListSecrets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kiss.resources.KISS/ListSecrets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KISSServer).ListSecrets(ctx, req.(*ListSecretsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KISS_BindSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BindSecretRequest)
 	if err := dec(in); err != nil {
@@ -192,6 +224,10 @@ var _KISS_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateSecret",
 			Handler:    _KISS_CreateSecret_Handler,
+		},
+		{
+			MethodName: "ListSecrets",
+			Handler:    _KISS_ListSecrets_Handler,
 		},
 		{
 			MethodName: "BindSecret",

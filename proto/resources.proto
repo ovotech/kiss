@@ -14,6 +14,7 @@ service KISS {
     // Temporary RPC to test authorization; will be removed.
     rpc Ping (PingRequest) returns (PingResponse) {}
     rpc CreateSecret(CreateSecretRequest) returns (CreateSecretResponse) {}
+    rpc ListSecrets(ListSecretsRequest) returns (ListSecretsResponse) {}
     rpc BindSecret(BindSecretRequest) returns (BindSecretResponse) {}
     rpc CreateSecretIAMPolicy(CreateSecretIAMPolicyRequest) returns (CreateSecretIAMPolicyResponse) {}
 }
@@ -31,6 +32,14 @@ message CreateSecretRequest {
 }
 
 message CreateSecretResponse {}
+
+message ListSecretsRequest {
+    ClientMeta metadata = 1;
+}
+
+message ListSecretsResponse {
+    repeated string secrets = 1;
+}
 
 message BindSecretRequest {
     ClientMeta metadata = 1;
