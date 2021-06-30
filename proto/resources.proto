@@ -15,8 +15,10 @@ service KISS {
     rpc Ping (PingRequest) returns (PingResponse) {}
     rpc CreateSecret(CreateSecretRequest) returns (CreateSecretResponse) {}
     rpc ListSecrets(ListSecretsRequest) returns (ListSecretsResponse) {}
+    rpc DeleteSecret(DeleteSecretRequest) returns (DeleteSecretResponse) {}
     rpc BindSecret(BindSecretRequest) returns (BindSecretResponse) {}
     rpc CreateSecretIAMPolicy(CreateSecretIAMPolicyRequest) returns (CreateSecretIAMPolicyResponse) {}
+    rpc DeleteSecretIAMPolicy(DeleteSecretIAMPolicyRequest) returns (DeleteSecretIAMPolicyResponse) {}
 }
 
 message PingRequest {
@@ -55,3 +57,17 @@ message CreateSecretIAMPolicyRequest {
 }
 
 message CreateSecretIAMPolicyResponse {}
+
+message DeleteSecretRequest {
+    ClientMeta metadata = 1;
+    string name = 2;
+}
+
+message DeleteSecretResponse {}
+
+message DeleteSecretIAMPolicyRequest {
+    ClientMeta metadata = 1;
+    string name = 2;
+}
+
+message DeleteSecretIAMPolicyResponse {}

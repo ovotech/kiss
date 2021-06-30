@@ -8,6 +8,7 @@ const (
 	OtherErrorCode           = "OtherError"
 	AlreadyExistsErrorCode   = "AlreadyExists"
 	MalformedPolicyErrorCode = "MalformedPolicy"
+	InvalidRequestErrorCode  = "InvalidRequest"
 )
 
 type AWSError struct {
@@ -45,6 +46,13 @@ func IsMalformedPolicy(err error) bool {
 
 func IsNotManaged(err error) bool {
 	if err, ok := err.(*AWSError); ok && err.Code == NotManagedErrorCode {
+		return true
+	}
+	return false
+}
+
+func IsInvalidRequest(err error) bool {
+	if err, ok := err.(*AWSError); ok && err.Code == InvalidRequestErrorCode {
 		return true
 	}
 	return false

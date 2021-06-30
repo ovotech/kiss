@@ -57,8 +57,6 @@ func (s *kissServer) CreateSecretIAMPolicy(
 		if awserrors.IsAlreadyExists(err) {
 			return nil, status.Errorf(
 				codes.AlreadyExists,
-				createSecretIAMPolicyRequest.Metadata.Namespace,
-				createSecretIAMPolicyRequest.Name,
 				"resource '%s/%s' already exists",
 				createSecretIAMPolicyRequest.Metadata.Namespace,
 				createSecretIAMPolicyRequest.Name,
