@@ -1,10 +1,12 @@
 package aws
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	iamtypes "github.com/aws/aws-sdk-go-v2/service/iam/types"
+	"github.com/aws/smithy-go"
 	awserrors "github.com/ovotech/kiss/pkg/aws/errors"
 	"github.com/ovotech/kiss/pkg/ref"
 )
@@ -43,6 +45,13 @@ func (m *Manager) CreateSecretIAMPolicy(namespace, name, arn string) error {
 		&iam.CreatePolicyInput{PolicyDocument: &policy, PolicyName: &policyName, Tags: tags},
 	)
 	if err != nil {
+		var ae smithy.APIError
+		if errors.As(err, &ae) && ae.ErrorCode() == "EntityAlreadyExists" {
+			return &awserrors.AWSError{
+				Code:    awserrors.AlreadyExistsErrorCode,
+				Message: "An IAM policy for this secret already exists",
+			}
+		}
 		return &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
 	}
 
@@ -62,5 +71,72 @@ func (m *Manager) AttachIAMPolicy(namespace, name, serviceAccountName string) er
 		return &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
 	}
 
+	return nil
+}
+
+// Gets the IAM policy with namesapce and name.
+func (m *Manager) GetIAMPolicy(namespace, name string) (*iam.GetPolicyOutput, error) {
+	policyARN := m.makeSecretPolicyARN(namespace, name)
+
+	policyOutput, err := m.iamclient.GetPolicy(
+		m.ctx,
+		&iam.GetPolicyInput{PolicyArn: &policyARN},
+	)
+	if err != nil {
+		var ae smithy.APIError
+		if errors.As(err, &ae) && ae.ErrorCode() == "ResourceNotFoundException" {
+			return nil, &awserrors.AWSError{
+				Code:    awserrors.NotFoundErrorCode,
+				Message: "Couldn't find a IAM policy for this secret.",
+			}
+		}
+		return nil, &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
+	}
+
+	return policyOutput, nil
+}
+
+func (m *Manager) isManagedPolicy(policyOutput *iam.GetPolicyOutput) bool {
+	for _, tag := range policyOutput.Policy.Tags {
+		if *tag.Key == managedByTagKey && *tag.Value == managedByTagValue {
+			return true
+		}
+	}
+
+	return false
+}
+
+// Delete IAM Policy for a secret with the given name.
+func (m *Manager) DeleteSecretIAMPolicy(namespace, name string) error {
+	policy, err := m.GetIAMPolicy(
+		namespace,
+		name,
+	)
+	if err != nil {
+		return err
+	}
+
+	if !m.isManagedPolicy(policy) {
+		return &awserrors.AWSError{
+			Code:    awserrors.NotManagedErrorCode,
+			Message: "The policy is not managed by KISS",
+		}
+	}
+
+	_, err = m.iamclient.DeletePolicy(
+		m.ctx,
+		&iam.DeletePolicyInput{PolicyArn: policy.Policy.Arn},
+	)
+
+	if err != nil {
+		var ae smithy.APIError
+		if errors.As(err, &ae) && ae.ErrorCode() == "ResourceNotFoundException" {
+			return &awserrors.AWSError{
+				Code:    awserrors.NotFoundErrorCode,
+				Message: "Couldn't find a IAM policy for this secret.",
+			}
+		}
+		return &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
+	}
 	return nil
 }
