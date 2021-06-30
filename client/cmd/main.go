@@ -46,10 +46,18 @@ var (
 		"The k8s service account that requires access to the secret.",
 	)
 
+	deleteSecretCmd    = flag.NewFlagSet("delete", flag.ExitOnError)
+	deleteSecretName   = deleteSecretCmd.String("name", "", "The name of the secret.")
+	deleteSecretPolicy = deleteSecretCmd.Bool(
+		"policy",
+		false,
+		"Delete the AWS IAM policy for reading this secret.",
+	)
 	subcommands = map[string]*flag.FlagSet{
 		pingCmd.Name():         pingCmd,
 		createSecretCmd.Name(): createSecretCmd,
 		bindSecretCmd.Name():   bindSecretCmd,
+		deleteSecretCmd.Name(): deleteSecretCmd,
 	}
 )
 
@@ -107,6 +115,14 @@ func main() {
 			*bindSecretName,
 			*bindSecretServiceAccount,
 		)
+	case "delete":
+		if *deleteSecretName == "" {
+			log.Fatalf("[ERROR] -name is required, see help for more details.")
+		}
+		client.DeleteSecret(kissClient, timeout, namespace, *deleteSecretName)
+		if *deleteSecretPolicy {
+			client.DeleteSecretIAMPolicy(kissClient, timeout, namespace, *deleteSecretName)
+		}
 	default:
 		log.Fatalf("[ERROR] Unknown command")
 	}

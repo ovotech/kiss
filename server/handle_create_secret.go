@@ -40,6 +40,15 @@ func (s *kissServer) CreateSecret(
 				createSecretRequest.Name,
 			)
 		}
+		if awserrors.IsInvalidRequest(err) {
+			return nil, status.Errorf(
+				codes.FailedPrecondition,
+				"resource '%s/%s' could not be created: %s",
+				createSecretRequest.Metadata.Namespace,
+				createSecretRequest.Name,
+				err,
+			)
+		}
 		return nil, status.Errorf(codes.Unknown, "failed to create secret for unknown reasons")
 	}
 
