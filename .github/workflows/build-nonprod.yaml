@@ -5,6 +5,16 @@
 # here we're doing a hacky get-around by checking out the head_branch in checkout
 # TL;DR - need to rethink this when we do prod builds and potentially use `workflow_dispatch`
 
+
+# notes for tomorrow
+# we want to trigger builds only after integration checks have passed
+# for both prod and nonprod
+# for build-prod, we need a way to check that the integration checks were themselves triggered from
+# a merge to main
+# we _only_ want build-prod to run:
+# * on integration completed successfully
+# * if integration was itself run on_release
+
 name: build-nonprod
 
 on:
@@ -28,8 +38,15 @@ jobs:
 
     - name: Test environment
       run: |
-        [ $TEST == "prod" ]; echo $?
-        [ $TEST == "nonprod" ]; echo $? 
+        if [[ $TEST == "prod" ]]
+        then
+            echo p
+        fi
+
+        if [[ $TEST == "nonprod" ]]
+        then 
+            echo np
+        fi
 
     - name: Compute short SHA
       id: short_sha
