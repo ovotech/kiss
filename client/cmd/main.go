@@ -33,7 +33,7 @@ var (
 	createSecretName   = createSecretCmd.String("name", "", "The name of the secret.")
 	createSecretValue  = createSecretCmd.String("value", "", "The value of the secret.")
 	createSecretPolicy = createSecretCmd.Bool(
-		"create-policy",
+		"policy",
 		false,
 		"Create an AWS IAM policy for reading this secret.",
 	)
