@@ -86,6 +86,7 @@ func (m *Manager) GetSecret(namespace, name string) (*sm.DescribeSecretOutput, e
 // rather than the full secret name used in AWS.
 func (m *Manager) ListSecrets(namespace string) ([]string, error) {
 	secrets := []string{}
+	// only get secrets managed by kiss and for this namespace
 	filters := []smtypes.Filter{
 		{Key: "tag-key", Values: []string{managedByTagKey}},
 		{Key: "tag-value", Values: []string{managedByTagValue}},
