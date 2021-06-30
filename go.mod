@@ -14,5 +14,6 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/hashicorp/logutils v1.0.0
 	github.com/rs/zerolog v1.22.0
+	github.com/spf13/cobra v1.1.3
 	google.golang.org/grpc v1.38.0
 )
