@@ -52,7 +52,11 @@ func (s *kissServer) DeleteSecret(
 		return nil, status.Errorf(codes.Unknown, "failed to delete secret for unknown reasons")
 	}
 
-	log.Info().
-		Msgf("Deleted secret '%s/%s' on behalf of '%s'", deleteSecretRequest.Metadata.Namespace, deleteSecretRequest.Name, ctx.Value("user"))
+	log.Info().Msgf(
+		"Deleted secret '%s/%s' on behalf of '%s'",
+		deleteSecretRequest.Metadata.Namespace,
+		deleteSecretRequest.Name,
+		ctx.Value("user"),
+	)
 	return &pb.DeleteSecretResponse{}, nil
 }

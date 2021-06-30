@@ -100,8 +100,6 @@ func (m *Manager) isManagedSecret(secretOutput *sm.DescribeSecretOutput) bool {
 
 // Delete a secret with the given name.
 func (m *Manager) DeleteSecret(namespace, name string) error {
-	secretName := m.makeSecretName(namespace, name)
-
 	secret, err := m.GetSecret(
 		namespace,
 		name,
@@ -119,7 +117,7 @@ func (m *Manager) DeleteSecret(namespace, name string) error {
 
 	_, err = m.smclient.DeleteSecret(
 		m.ctx,
-		&sm.DeleteSecretInput{SecretId: &secretName, ForceDeleteWithoutRecovery: true},
+		&sm.DeleteSecretInput{SecretId: secret.Name, ForceDeleteWithoutRecovery: true},
 	)
 
 	if err != nil {
