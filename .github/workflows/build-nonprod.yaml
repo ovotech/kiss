@@ -17,6 +17,7 @@ jobs:
     # only run this job if the dependency workflow was a success
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    environment: nonprod
     env:
       ECR_REPOSITORY: kiss-server
     steps:
@@ -25,6 +26,10 @@ jobs:
       with:
         ref: ${{ github.event.workflow_run.head_branch }}
 
+    - name: Test environment
+      run: |
+        [ $TEST == "prod" ]; echo $?
+        [ $TEST == "nonprod" ]; echo $? 
     - name: Compute short SHA
       id: short_sha
       run: echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
