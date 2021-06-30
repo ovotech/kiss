@@ -75,7 +75,7 @@ func (m *Manager) AttachIAMPolicy(namespace, name, serviceAccountName string) er
 }
 
 // Gets the IAM policy with namesapce and name.
-func (m *Manager) GetIamPolicy(namespace, name string) (*iam.GetPolicyOutput, error) {
+func (m *Manager) GetIAMPolicy(namespace, name string) (*iam.GetPolicyOutput, error) {
 	policyARN := m.makeSecretPolicyARN(namespace, name)
 
 	policyOutput, err := m.iamclient.GetPolicy(
@@ -108,7 +108,7 @@ func (m *Manager) isManagedPolicy(policyOutput *iam.GetPolicyOutput) bool {
 
 // Delete IAM Policy for a secret with the given name.
 func (m *Manager) DeleteSecretIAMPolicy(namespace, name string) error {
-	policy, err := m.GetIamPolicy(
+	policy, err := m.GetIAMPolicy(
 		namespace,
 		name,
 	)
