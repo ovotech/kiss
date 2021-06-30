@@ -38,6 +38,8 @@ var (
 		"Create an AWS IAM policy for reading this secret.",
 	)
 
+	listSecretsCmd = flag.NewFlagSet("list", flag.ExitOnError)
+
 	bindSecretCmd            = flag.NewFlagSet("bind", flag.ExitOnError)
 	bindSecretName           = bindSecretCmd.String("name", "", "The name of the secret.")
 	bindSecretServiceAccount = bindSecretCmd.String(
@@ -49,6 +51,7 @@ var (
 	subcommands = map[string]*flag.FlagSet{
 		pingCmd.Name():         pingCmd,
 		createSecretCmd.Name(): createSecretCmd,
+		listSecretsCmd.Name():  listSecretsCmd,
 		bindSecretCmd.Name():   bindSecretCmd,
 	}
 )
@@ -96,6 +99,8 @@ func main() {
 		if *createSecretPolicy {
 			client.CreateSecretIAMPolicy(kissClient, timeout, namespace, *createSecretName)
 		}
+	case "list":
+		client.ListSecrets(kissClient, timeout, namespace)
 	case "bind":
 		if *bindSecretName == "" || *bindSecretServiceAccount == "" {
 			log.Fatalf("[ERROR] -name and -service-acount are required, see help for more details")

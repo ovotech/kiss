@@ -82,6 +82,64 @@ func (m *Manager) GetSecret(namespace, name string) (*sm.DescribeSecretOutput, e
 	return secretOutput, nil
 }
 
+// Returns a list of all secret names for given namespace. It uses the short name defined in tags
+// rather than the full secret name used in AWS.
+func (m *Manager) ListSecrets(namespace string) ([]string, error) {
+	secrets := []string{}
+	filters := []smtypes.Filter{
+		{Key: "tag-key", Values: []string{managedByTagKey}},
+		{Key: "tag-value", Values: []string{managedByTagValue}},
+		{Key: "tag-key", Values: []string{namespaceTagKey}},
+		{Key: "tag-value", Values: []string{namespace}},
+	}
+	listSecretsInput := &sm.ListSecretsInput{
+		Filters: filters,
+	}
+
+	for {
+		listSecretsOutput, err := m.smclient.ListSecrets(
+			m.ctx,
+			listSecretsInput,
+		)
+		if err != nil {
+			return nil, &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
+		}
+
+		// loop through results to append the name tag value to our list of secrets
+		for _, secretListEntry := range listSecretsOutput.SecretList {
+			secretName, err := m.getTagValue(secretListEntry.Tags, nameTagKey)
+			if err != nil {
+				return nil, &awserrors.AWSError{
+					Code:    awserrors.OtherErrorCode,
+					Message: err.Error(),
+				}
+			}
+			secrets = append(secrets, *secretName)
+		}
+
+		// loop until NextToken is empty
+		if listSecretsOutput.NextToken == nil {
+			break
+		}
+
+		listSecretsInput = &sm.ListSecretsInput{
+			Filters:   filters,
+			NextToken: listSecretsOutput.NextToken,
+		}
+	}
+
+	return secrets, nil
+}
+
+func (m *Manager) getTagValue(tags []smtypes.Tag, tagKey string) (*string, error) {
+	for _, tag := range tags {
+		if *tag.Key == tagKey {
+			return tag.Value, nil
+		}
+	}
+	return nil, fmt.Errorf("key '%s' not found in secret's tags", tagKey)
+}
+
 func (m *Manager) isManagedSecret(secretOutput *sm.DescribeSecretOutput) bool {
 	for _, tag := range secretOutput.Tags {
 		if *tag.Key == managedByTagKey && *tag.Value == managedByTagValue {
