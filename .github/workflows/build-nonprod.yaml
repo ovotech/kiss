@@ -30,6 +30,7 @@ jobs:
       run: |
         [ $TEST == "prod" ]; echo $?
         [ $TEST == "nonprod" ]; echo $? 
+
     - name: Compute short SHA
       id: short_sha
       run: echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
