@@ -1,0 +1,73 @@
+# Builds and pushes server image to prod ECR
+# Builds client binaries
+# Runs in reponse to successful integration tests that were triggered by a release only
+
+name: build-release
+
+on:
+  workflow_run:
+    workflows: [integration]
+    types: [completed]
+
+jobs:
+  build_server_image:
+    # only run this job if the dependency workflow was a success and was triggered as part of a release
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release'
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      ECR_REPOSITORY: kiss-server
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with: 
+        ref: ${{ github.event.workflow_run.head_branch }}
+
+    # the branch will be the release tag, and is what we want for our docker image tag
+    - name: Get image tag
+      id: get_image_tag
+      run: |
+        echo "::set-output name=tag::${{ github.event.workflow_run.head_branch }}"
+
+    # using this action makes Docker layer caching easier:
+    # https://www.docker.com/blog/docker-github-actions/
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-1
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: ./
+        file: server/Dockerfile
+        push: true
+        tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_image_tag.outputs.tag }}
+        cache-from: type=local,src=/tmp/.buildx-cache
+        cache-to: type=local,dest=/tmp/.buildx-cache-new
+        builder: ${{ steps.buildx.outputs.name }}
+
+    # prevent cache from growing too large
+    # https://github.com/docker/build-push-action/issues/252
+    - name: Move cache
+      run: |
+        rm -rf /tmp/.buildx-cache
+        mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+ 
