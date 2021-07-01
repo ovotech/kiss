@@ -1,8 +1,9 @@
-# Builds and push the server image to nonprod ECR
-# Runs on both PRs and releases, provided integation tests were successful
+# Builds and pushes server image to prod ECR
+# Builds client binaries
+# Runs in reponse to successful integration tests that were triggered by a release only
 # NB: workflows that run on workflow_run use the workflow file from the main branch
 
-name: build-nonprod
+name: build-release
 
 on:
   workflow_run:
@@ -11,10 +12,10 @@ on:
 
 jobs:
   build_server_image:
-    # only run this job if the dependency workflow was a success
-    if: github.event.workflow_run.conclusion == 'success'
+    # only run this job if the dependency workflow was a success and was triggered as part of a release
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release'
     runs-on: ubuntu-latest
-    environment: nonprod
+    environment: prod
     env:
       ECR_REPOSITORY: kiss-server
     steps:
@@ -23,21 +24,11 @@ jobs:
       with: 
         ref: ${{ github.event.workflow_run.head_branch }}
 
-    # if it's a release we get the docker image tag from the branch
-    # (this will be the git tag)
-    # if it's a pull_request, we set the docker image tag to the short commit SHA
+    # the branch will be the release tag, and is what we want for our docker image tag
     - name: Get image tag
       id: get_image_tag
       run: |
-        if [[ ${{ github.event.workflow_run.event }} == "release" ]]
-        then
-          echo "::set-output name=tag::${{ github.event.workflow_run.head_branch }}"
-        elif [[ ${{ github.event.workflow_run.event }} == "pull_request" ]]
-        then
-          echo "::set-output name=tag::$(git rev-parse --short HEAD)"
-        else
-          exit 1
-        fi
+        echo "::set-output name=tag::${{ github.event.workflow_run.head_branch }}"
 
     # using this action makes Docker layer caching easier:
     # https://www.docker.com/blog/docker-github-actions/
