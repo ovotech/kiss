@@ -30,6 +30,7 @@ jobs:
     environment: nonprod
     env:
       ECR_REPOSITORY: kiss-server
+      TEST: ${{ secrets.TEST }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
