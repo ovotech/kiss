@@ -30,24 +30,11 @@ jobs:
     environment: nonprod
     env:
       ECR_REPOSITORY: kiss-server
-      TEST: ${{ secrets.TEST }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         ref: ${{ github.event.workflow_run.head_branch }}
-
-    - name: Test environment
-      run: |
-        if [[ $TEST == "prod" ]]
-        then
-            exit 1
-        fi
-
-        if [[ $TEST == "nonprod" ]]
-        then  
-            exit 2
-        fi
 
     - name: Compute short SHA
       id: short_sha
