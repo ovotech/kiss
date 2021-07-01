@@ -1,19 +1,6 @@
-# IMPORTANT NOTE BEFORE IMPLEMENTING BUILD-PROD
-# I believe this approach using `workflow_run` will introduce an accidental
-# "privilege escalation" once we use environments to restrict secrets
-# when doing `workflow_run` the context of the workflow will be the default (protected) branch
-# here we're doing a hacky get-around by checking out the head_branch in checkout
-# TL;DR - need to rethink this when we do prod builds and potentially use `workflow_dispatch`
-
-
-# notes for tomorrow
-# we want to trigger builds only after integration checks have passed
-# for both prod and nonprod
-# for build-prod, we need a way to check that the integration checks were themselves triggered from
-# a merge to main
-# we _only_ want build-prod to run:
-# * on integration completed successfully
-# * if integration was itself run on_release
+# Builds and push the server image to nonprod ECR
+# Runs on both PRs and releases, provided integation tests were successful
+# NB: workflows that run on workflow_run use the workflow file from the main branch
 
 name: build-nonprod
 
@@ -23,35 +10,34 @@ on:
     types: [completed]
 
 jobs:
-  build:
+  build_server_image:
     # only run this job if the dependency workflow was a success
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: nonprod
     env:
       ECR_REPOSITORY: kiss-server
-      TEST: ${{ secrets.TEST }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-      with:
+      with: 
         ref: ${{ github.event.workflow_run.head_branch }}
 
-    - name: Test environment
+    # if it's a release we get the docker image tag from the branch
+    # (this will be the git tag)
+    # if it's a pull_request, we set the docker image tag to the short commit SHA
+    - name: Get image tag
+      id: get_image_tag
       run: |
-        if [[ $TEST == "prod" ]]
+        if [[ ${{ github.event.workflow_run.event }} == "release" ]]
         then
-            exit 1
+          echo "::set-output name=tag::${{ github.event.workflow_run.head_branch }}"
+        elif [[ ${{ github.event.workflow_run.event }} == "pull_request" ]]
+        then
+          echo "::set-output name=tag::$(git rev-parse --short HEAD)"
+        else
+          exit 1
         fi
-
-        if [[ $TEST == "nonprod" ]]
-        then  
-            exit 2
-        fi
-
-    - name: Compute short SHA
-      id: short_sha
-      run: echo "::set-output name=short_sha::$(git rev-parse --short HEAD)"
 
     # using this action makes Docker layer caching easier:
     # https://www.docker.com/blog/docker-github-actions/
@@ -83,7 +69,7 @@ jobs:
         context: ./
         file: server/Dockerfile
         push: true
-        tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.short_sha.outputs.short_sha }}
+        tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_image_tag.outputs.tag }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new
         builder: ${{ steps.buildx.outputs.name }}
