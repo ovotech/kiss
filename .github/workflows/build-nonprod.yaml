@@ -6,7 +6,7 @@ on:
     types: [completed]
 
 jobs:
-  build:
+  build_image:
     # only run this job if the dependency workflow was a success
     if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
