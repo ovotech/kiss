@@ -40,12 +40,12 @@ jobs:
       run: |
         if [[ $TEST == "prod" ]]
         then
-            echo p
+            exit 1
         fi
 
         if [[ $TEST == "nonprod" ]]
         then 
-            echo np
+            exit 2
         fi
 
     - name: Compute short SHA
