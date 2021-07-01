@@ -30,6 +30,7 @@ jobs:
     environment: nonprod
     env:
       ECR_REPOSITORY: kiss-server
+      TEST: ${{ secrets.TEST }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -44,7 +45,7 @@ jobs:
         fi
 
         if [[ $TEST == "nonprod" ]]
-        then 
+        then  
             exit 2
         fi
 
