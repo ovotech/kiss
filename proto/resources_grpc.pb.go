@@ -11,7 +11,6 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // KISSClient is the client API for KISS service.
@@ -21,6 +20,7 @@ type KISSClient interface {
 	// Temporary RPC to test authorization; will be removed.
 	Ping(ctx context.Context, in *PingRequest, opts ...grpc.CallOption) (*PingResponse, error)
 	CreateSecret(ctx context.Context, in *CreateSecretRequest, opts ...grpc.CallOption) (*CreateSecretResponse, error)
+	ListSecrets(ctx context.Context, in *ListSecretsRequest, opts ...grpc.CallOption) (*ListSecretsResponse, error)
 	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*DeleteSecretResponse, error)
 	BindSecret(ctx context.Context, in *BindSecretRequest, opts ...grpc.CallOption) (*BindSecretResponse, error)
 	CreateSecretIAMPolicy(ctx context.Context, in *CreateSecretIAMPolicyRequest, opts ...grpc.CallOption) (*CreateSecretIAMPolicyResponse, error)
@@ -47,6 +47,15 @@ func (c *kISSClient) Ping(ctx context.Context, in *PingRequest, opts ...grpc.Cal
 func (c *kISSClient) CreateSecret(ctx context.Context, in *CreateSecretRequest, opts ...grpc.CallOption) (*CreateSecretResponse, error) {
 	out := new(CreateSecretResponse)
 	err := c.cc.Invoke(ctx, "/kiss.resources.KISS/CreateSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *kISSClient) ListSecrets(ctx context.Context, in *ListSecretsRequest, opts ...grpc.CallOption) (*ListSecretsResponse, error) {
+	out := new(ListSecretsResponse)
+	err := c.cc.Invoke(ctx, "/kiss.resources.KISS/ListSecrets", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -96,6 +105,7 @@ type KISSServer interface {
 	// Temporary RPC to test authorization; will be removed.
 	Ping(context.Context, *PingRequest) (*PingResponse, error)
 	CreateSecret(context.Context, *CreateSecretRequest) (*CreateSecretResponse, error)
+	ListSecrets(context.Context, *ListSecretsRequest) (*ListSecretsResponse, error)
 	DeleteSecret(context.Context, *DeleteSecretRequest) (*DeleteSecretResponse, error)
 	BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error)
 	CreateSecretIAMPolicy(context.Context, *CreateSecretIAMPolicyRequest) (*CreateSecretIAMPolicyResponse, error)
@@ -112,6 +122,9 @@ func (UnimplementedKISSServer) Ping(context.Context, *PingRequest) (*PingRespons
 }
 func (UnimplementedKISSServer) CreateSecret(context.Context, *CreateSecretRequest) (*CreateSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateSecret not implemented")
+}
+func (UnimplementedKISSServer) ListSecrets(context.Context, *ListSecretsRequest) (*ListSecretsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListSecrets not implemented")
 }
 func (UnimplementedKISSServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*DeleteSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
@@ -135,7 +148,7 @@ type UnsafeKISSServer interface {
 }
 
 func RegisterKISSServer(s grpc.ServiceRegistrar, srv KISSServer) {
-	s.RegisterService(&KISS_ServiceDesc, srv)
+	s.RegisterService(&_KISS_serviceDesc, srv)
 }
 
 func _KISS_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -170,6 +183,24 @@ func _KISS_CreateSecret_Handler(srv interface{}, ctx context.Context, dec func(i
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(KISSServer).CreateSecret(ctx, req.(*CreateSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _KISS_ListSecrets_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListSecretsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KISSServer).ListSecrets(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kiss.resources.KISS/ListSecrets",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KISSServer).ListSecrets(ctx, req.(*ListSecretsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -246,10 +277,7 @@ func _KISS_DeleteSecretIAMPolicy_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-// KISS_ServiceDesc is the grpc.ServiceDesc for KISS service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var KISS_ServiceDesc = grpc.ServiceDesc{
+var _KISS_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "kiss.resources.KISS",
 	HandlerType: (*KISSServer)(nil),
 	Methods: []grpc.MethodDesc{
@@ -260,6 +288,10 @@ var KISS_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateSecret",
 			Handler:    _KISS_CreateSecret_Handler,
+		},
+		{
+			MethodName: "ListSecrets",
+			Handler:    _KISS_ListSecrets_Handler,
 		},
 		{
 			MethodName: "DeleteSecret",

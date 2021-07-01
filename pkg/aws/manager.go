@@ -14,7 +14,7 @@ import (
 
 const (
 	managedByTagKey   = "security.kaluza.com/managed-by"
-	managedByTagValue = "kaluza-infrastructure-secret-service"
+	managedByTagValue = "kiss"
 	namespaceTagKey   = "security.kaluza.com/secret-namespace"
 	nameTagKey        = "security.kaluza.com/secret-name"
 )
