@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     # only run this job if the dependency workflow was a success
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: nonprod
     env:
