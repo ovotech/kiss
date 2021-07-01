@@ -18,17 +18,12 @@ jobs:
     environment: prod
     env:
       ECR_REPOSITORY: kiss-server
+      TAG: ${{ github.event.workflow_run.head_branch }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with: 
         ref: ${{ github.event.workflow_run.head_branch }}
-
-    # the branch will be the release tag, and is what we want for our docker image tag
-    - name: Get image tag
-      id: get_image_tag
-      run: |
-        echo "::set-output name=tag::${{ github.event.workflow_run.head_branch }}"
 
     # using this action makes Docker layer caching easier:
     # https://www.docker.com/blog/docker-github-actions/
@@ -60,7 +55,7 @@ jobs:
         context: ./
         file: server/Dockerfile
         push: true
-        tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_image_tag.outputs.tag }}
+        tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.TAG }}
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new
         builder: ${{ steps.buildx.outputs.name }}
@@ -71,4 +66,45 @@ jobs:
       run: |
         rm -rf /tmp/.buildx-cache
         mv /tmp/.buildx-cache-new /tmp/.buildx-cache
- 
+  
+  build_linux_client:
+    # only run this job if the dependency workflow was a success and was triggered as part of a release
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'release'
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.workflow_run.head_branch }}
+      GOARCH: amd64
+      GOOS: linux
+    steps:
+    - name: Install Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.14
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with: 
+        ref: ${{ github.event.workflow_run.head_branch }}
+
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/go/pkg/mod
+          ~/.cache/go-build
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-
+
+    - name: Compile
+      working-directory: ./client/cmd
+      run: |
+        go build -o /tmp/kiss-${{ env.GOOS }}-${{ env.GOARCH }} .
+  
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG }}
+        files: |
+          /tmp/kiss-${{ env.GOOS }}-${{ env.GOARCH }}
+          LICENSE
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
