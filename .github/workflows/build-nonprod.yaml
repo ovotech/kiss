@@ -19,6 +19,9 @@ jobs:
       with: 
         ref: ${{ github.event.workflow_run.head_branch }}
 
+    # if it's a release we get the docker image tag from the branch
+    # (this will be the git tag)
+    # if it's a pull_request, we set the docker image tag to the short commit SHA
     - name: Get image tag
       id: get_image_tag
       run: |
