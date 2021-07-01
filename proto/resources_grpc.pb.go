@@ -11,7 +11,6 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
-// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // KISSClient is the client API for KISS service.
@@ -163,7 +162,7 @@ type UnsafeKISSServer interface {
 }
 
 func RegisterKISSServer(s grpc.ServiceRegistrar, srv KISSServer) {
-	s.RegisterService(&KISS_ServiceDesc, srv)
+	s.RegisterService(&_KISS_serviceDesc, srv)
 }
 
 func _KISS_Ping_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -310,10 +309,7 @@ func _KISS_DeleteSecretIAMPolicy_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-// KISS_ServiceDesc is the grpc.ServiceDesc for KISS service.
-// It's only intended for direct use with grpc.RegisterService,
-// and not to be introspected or modified (even as a copy)
-var KISS_ServiceDesc = grpc.ServiceDesc{
+var _KISS_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "kiss.resources.KISS",
 	HandlerType: (*KISSServer)(nil),
 	Methods: []grpc.MethodDesc{
