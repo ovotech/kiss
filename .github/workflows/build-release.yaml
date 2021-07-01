@@ -1,6 +1,7 @@
 # Builds and pushes server image to prod ECR
 # Builds client binaries
 # Runs in reponse to successful integration tests that were triggered by a release only
+# NB: workflows that run on workflow_run use the workflow file from the main branch
 
 name: build-release
 

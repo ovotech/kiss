@@ -1,5 +1,6 @@
 # Builds and push the server image to nonprod ECR
 # Runs on both PRs and releases, provided integation tests were successful
+# NB: workflows that run on workflow_run use the workflow file from the main branch
 
 name: build-nonprod
 
