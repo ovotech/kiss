@@ -157,6 +157,48 @@ func (m *Manager) isManagedSecret(secretOutput *sm.DescribeSecretOutput) bool {
 	return false
 }
 
+// Update a secret with the given string value in the namespace provided.
+func (m *Manager) UpdateSecret(namespace, name, value string) error {
+	secret, err := m.GetSecret(
+		namespace,
+		name,
+	)
+	if err != nil {
+		return err
+	}
+
+	if !m.isManagedSecret(secret) {
+		return &awserrors.AWSError{
+			Code:    awserrors.NotManagedErrorCode,
+			Message: "The secret is not managed by KISS",
+		}
+	}
+
+	_, err = m.smclient.UpdateSecret(
+		m.ctx,
+		&sm.UpdateSecretInput{SecretId: secret.Name, SecretString: &value},
+	)
+
+	if err != nil {
+		var ae smithy.APIError
+		if errors.As(err, &ae) && ae.ErrorCode() == "ResourceNotFoundException" {
+			return &awserrors.AWSError{
+				Code:    awserrors.AlreadyExistsErrorCode,
+				Message: "A resource with this name already exists.",
+			}
+		}
+		if errors.As(err, &ae) && ae.ErrorCode() == "InvalidRequestException" {
+			return &awserrors.AWSError{
+				Code:    awserrors.InvalidRequestErrorCode,
+				Message: ae.ErrorMessage(),
+			}
+		}
+		return &awserrors.AWSError{Code: awserrors.OtherErrorCode, Message: err.Error()}
+	}
+
+	return nil
+}
+
 // Delete a secret with the given name.
 func (m *Manager) DeleteSecret(namespace, name string) error {
 	secret, err := m.GetSecret(

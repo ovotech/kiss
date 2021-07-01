@@ -16,6 +16,7 @@ service KISS {
     rpc CreateSecret(CreateSecretRequest) returns (CreateSecretResponse) {}
     rpc ListSecrets(ListSecretsRequest) returns (ListSecretsResponse) {}
     rpc DeleteSecret(DeleteSecretRequest) returns (DeleteSecretResponse) {}
+    rpc UpdateSecret(UpdateSecretRequest) returns (UpdateSecretResponse) {}
     rpc BindSecret(BindSecretRequest) returns (BindSecretResponse) {}
     rpc CreateSecretIAMPolicy(CreateSecretIAMPolicyRequest) returns (CreateSecretIAMPolicyResponse) {}
     rpc DeleteSecretIAMPolicy(DeleteSecretIAMPolicyRequest) returns (DeleteSecretIAMPolicyResponse) {}
@@ -57,6 +58,14 @@ message CreateSecretIAMPolicyRequest {
 }
 
 message CreateSecretIAMPolicyResponse {}
+
+message UpdateSecretRequest {
+    ClientMeta metadata = 1;
+    string name = 2;
+    string value = 3;
+}
+
+message UpdateSecretResponse {}
 
 message DeleteSecretRequest {
     ClientMeta metadata = 1;

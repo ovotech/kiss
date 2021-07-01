@@ -22,6 +22,7 @@ type KISSClient interface {
 	CreateSecret(ctx context.Context, in *CreateSecretRequest, opts ...grpc.CallOption) (*CreateSecretResponse, error)
 	ListSecrets(ctx context.Context, in *ListSecretsRequest, opts ...grpc.CallOption) (*ListSecretsResponse, error)
 	DeleteSecret(ctx context.Context, in *DeleteSecretRequest, opts ...grpc.CallOption) (*DeleteSecretResponse, error)
+	UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*UpdateSecretResponse, error)
 	BindSecret(ctx context.Context, in *BindSecretRequest, opts ...grpc.CallOption) (*BindSecretResponse, error)
 	CreateSecretIAMPolicy(ctx context.Context, in *CreateSecretIAMPolicyRequest, opts ...grpc.CallOption) (*CreateSecretIAMPolicyResponse, error)
 	DeleteSecretIAMPolicy(ctx context.Context, in *DeleteSecretIAMPolicyRequest, opts ...grpc.CallOption) (*DeleteSecretIAMPolicyResponse, error)
@@ -71,6 +72,15 @@ func (c *kISSClient) DeleteSecret(ctx context.Context, in *DeleteSecretRequest, 
 	return out, nil
 }
 
+func (c *kISSClient) UpdateSecret(ctx context.Context, in *UpdateSecretRequest, opts ...grpc.CallOption) (*UpdateSecretResponse, error) {
+	out := new(UpdateSecretResponse)
+	err := c.cc.Invoke(ctx, "/kiss.resources.KISS/UpdateSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *kISSClient) BindSecret(ctx context.Context, in *BindSecretRequest, opts ...grpc.CallOption) (*BindSecretResponse, error) {
 	out := new(BindSecretResponse)
 	err := c.cc.Invoke(ctx, "/kiss.resources.KISS/BindSecret", in, out, opts...)
@@ -107,6 +117,7 @@ type KISSServer interface {
 	CreateSecret(context.Context, *CreateSecretRequest) (*CreateSecretResponse, error)
 	ListSecrets(context.Context, *ListSecretsRequest) (*ListSecretsResponse, error)
 	DeleteSecret(context.Context, *DeleteSecretRequest) (*DeleteSecretResponse, error)
+	UpdateSecret(context.Context, *UpdateSecretRequest) (*UpdateSecretResponse, error)
 	BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error)
 	CreateSecretIAMPolicy(context.Context, *CreateSecretIAMPolicyRequest) (*CreateSecretIAMPolicyResponse, error)
 	DeleteSecretIAMPolicy(context.Context, *DeleteSecretIAMPolicyRequest) (*DeleteSecretIAMPolicyResponse, error)
@@ -128,6 +139,9 @@ func (UnimplementedKISSServer) ListSecrets(context.Context, *ListSecretsRequest)
 }
 func (UnimplementedKISSServer) DeleteSecret(context.Context, *DeleteSecretRequest) (*DeleteSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteSecret not implemented")
+}
+func (UnimplementedKISSServer) UpdateSecret(context.Context, *UpdateSecretRequest) (*UpdateSecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateSecret not implemented")
 }
 func (UnimplementedKISSServer) BindSecret(context.Context, *BindSecretRequest) (*BindSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method BindSecret not implemented")
@@ -223,6 +237,24 @@ func _KISS_DeleteSecret_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _KISS_UpdateSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(KISSServer).UpdateSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kiss.resources.KISS/UpdateSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(KISSServer).UpdateSecret(ctx, req.(*UpdateSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _KISS_BindSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BindSecretRequest)
 	if err := dec(in); err != nil {
@@ -296,6 +328,10 @@ var _KISS_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteSecret",
 			Handler:    _KISS_DeleteSecret_Handler,
+		},
+		{
+			MethodName: "UpdateSecret",
+			Handler:    _KISS_UpdateSecret_Handler,
 		},
 		{
 			MethodName: "BindSecret",
