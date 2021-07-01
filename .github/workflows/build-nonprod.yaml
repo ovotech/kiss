@@ -26,10 +26,10 @@ jobs:
     - name: Get image tag
       id: get_image_tag
       run: |
-        if [[ github.event.workflow_run.event == "release" ]]
+        if [[ ${{ github.event.workflow_run.event }} == "release" ]]
         then
           echo "::set-output name=tag::${GITHUB_REF/refs\/tags\//}"
-        elif [[ github.event.workflow_run.event == "pull_request" ]]
+        elif [[ ${{ github.event.workflow_run.event }} == "pull_request" ]]
         then
           echo "::set-output name=tag::$(git rev-parse --short HEAD)"
         else
