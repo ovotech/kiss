@@ -59,6 +59,7 @@ var (
 		false,
 		"Delete the AWS IAM policy for reading this secret.",
 	)
+
 	subcommands = map[string]*flag.FlagSet{
 		pingCmd.Name():         pingCmd,
 		createSecretCmd.Name(): createSecretCmd,
