@@ -48,6 +48,10 @@ var (
 		"The k8s service account that requires access to the secret.",
 	)
 
+	updateSecretCmd   = flag.NewFlagSet("update", flag.ExitOnError)
+	updateSecretName  = updateSecretCmd.String("name", "", "The name of the secret to update.")
+	updateSecretValue = updateSecretCmd.String("value", "", "The new value of the secret.")
+
 	deleteSecretCmd    = flag.NewFlagSet("delete", flag.ExitOnError)
 	deleteSecretName   = deleteSecretCmd.String("name", "", "The name of the secret.")
 	deleteSecretPolicy = deleteSecretCmd.Bool(
@@ -60,6 +64,7 @@ var (
 		createSecretCmd.Name(): createSecretCmd,
 		listSecretsCmd.Name():  listSecretsCmd,
 		bindSecretCmd.Name():   bindSecretCmd,
+		updateSecretCmd.Name(): updateSecretCmd,
 		deleteSecretCmd.Name(): deleteSecretCmd,
 	}
 )
@@ -120,6 +125,11 @@ func main() {
 			*bindSecretName,
 			*bindSecretServiceAccount,
 		)
+	case "update":
+		if *updateSecretName == "" || *updateSecretValue == "" {
+			log.Fatalf("[ERROR] -name and -value are required, see help for more details.")
+		}
+		client.UpdateSecret(kissClient, timeout, namespace, *updateSecretName, *updateSecretValue)
 	case "delete":
 		if *deleteSecretName == "" {
 			log.Fatalf("[ERROR] -name is required, see help for more details.")
