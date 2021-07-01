@@ -44,7 +44,7 @@ jobs:
         fi
 
         if [[ $TEST == "nonprod" ]]
-        then 
+        then  
             exit 2
         fi
 
