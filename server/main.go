@@ -48,6 +48,7 @@ func Run(
 	namespacesKey *string,
 	namespacesRegex *string,
 	identifierKey *string,
+	adminNamespace *string,
 ) (*grpc.Server, error) {
 	flag.Parse()
 
@@ -62,6 +63,7 @@ func Run(
 		*namespacesKey,
 		*namespacesRegex,
 		*identifierKey,
+		*adminNamespace,
 	)
 
 	grpcServer := grpc.NewServer(

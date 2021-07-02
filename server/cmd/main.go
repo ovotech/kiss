@@ -54,6 +54,11 @@ var (
 		"k8s-secret",
 		"Prefix for managed AWS Secrets Manager secrets.",
 	)
+	adminNamespace = flag.String(
+		"admin-namespace",
+		"",
+		"The admin cognito group that can manage secrets in all namespaces",
+	)
 )
 
 func main() {
@@ -101,6 +106,7 @@ func main() {
 		namespacesKey,
 		namespacesRegex,
 		identifierKey,
+		adminNamespace,
 	)
 	if err != nil {
 		log.Fatal().Msgf("Error starting server: %+v", err)

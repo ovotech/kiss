@@ -28,6 +28,7 @@ type serverAuthzInterceptor struct {
 	namespacesKey   string
 	namespacesRegex string
 	identifierKey   string
+	adminNamespace  string
 }
 
 type RequestWithMetadata interface {
@@ -50,7 +51,7 @@ type claims struct {
 // identiferKey is the key to a unique identifier in the claim, for example the email. This is for
 // auditing purposes.
 func NewServerAuthzInterceptor(
-	jwksURL, namespacesKey, namespacesRegex, identifierKey string,
+	jwksURL, namespacesKey, namespacesRegex, identifierKey, adminNamespace string,
 ) *serverAuthzInterceptor {
 	jwks, err := keyfunc.Get(jwksURL, keyfunc.Options{RefreshUnknownKID: &refreshUnknownKID})
 	if err != nil {
@@ -62,6 +63,7 @@ func NewServerAuthzInterceptor(
 		namespacesKey:   namespacesKey,
 		namespacesRegex: namespacesRegex,
 		identifierKey:   identifierKey,
+		adminNamespace:  adminNamespace,
 	}
 }
 
@@ -151,7 +153,7 @@ func (i *serverAuthzInterceptor) parseToken(ctx context.Context) (*claims, error
 // Note: this function does _not_ validate the token.
 func (i *serverAuthzInterceptor) authorize(claims *claims, requestNamespace string) error {
 	for _, claimNamespace := range claims.namespaces {
-		if claimNamespace == requestNamespace {
+		if claimNamespace == requestNamespace || (i.adminNamespace != "" && i.adminNamespace == claimNamespace) {
 			return nil
 		}
 	}
