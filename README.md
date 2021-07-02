@@ -71,7 +71,7 @@ The `cognito:groups` is a list of namespaces the token grants access to, prefixe
 $ cd server
 
 $ go run cmd/main.go
-	-jwks-url=https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_AbCdEf/.well-known/jwks.json
+	-jwks-url="https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_AbCdEf/.well-known/jwks.json"
 	-namespaces-key="cognito:groups"
 	-namespaces-regex="kaluza:([1-9a-z-]{1,63})"
 	-identifier-key="email"
