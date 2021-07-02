@@ -38,7 +38,7 @@ metadata:
     externalsecrets.kubernetes-client.io/permitted-key-name: "k8s-secret_security_.*"
 ```
 
-A member of the `security` namespace can then create a secret with `kiss` and then use it as such:
+A member of the `security` namespace can then create a secret with `kiss` and use it as such:
 
 ```yaml
 apiVersion: kubernetes-client.io/v1
