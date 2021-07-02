@@ -4,7 +4,7 @@
 
 AWS-based secrets management for Kubernetes.
 
-Leverages users' Kubernetes OIDC authentication tokens for AWS Secrets Manager secrets management.
+Leverages users' Kubernetes OIDC authentication tokens for AWS Secrets Manager secrets management. Can also manage AWS IAM policies for secrets if you're using the [AWS provider for the k8s Secrets Store CSI driver](https://aws.amazon.com/blogs/security/how-to-use-aws-secrets-configuration-provider-with-kubernetes-secrets-store-csi-driver/).
 
 ## Why?
 
@@ -47,6 +47,16 @@ spec:
     - key: k8s-secret_security_foo
       name: foo
 ```
+
+## Synergy with k8s Secrets Store CSI driver
+
+If you're using the [AWS Secrets & Configuration Provider with your Kubernetes Secrets Store CSI driver](https://aws.amazon.com/blogs/security/how-to-use-aws-secrets-configuration-provider-with-kubernetes-secrets-store-csi-driver/) you can use `kiss` to:
+* automatically create AWS IAM policies with read permissions when creating secrets
+* attach AWS IAM policies to IAM Roles for Service Accounts, allowing the relevant `ServiceAccount` to read your secret
+
+Combined with our [`iam-service-account-controller`](https://github.com/ovotech/iam-service-account-controller), this can allow your users to safely manage IAM roles and secret reading policies directly from their k8s namespaces, with no AWS permissions.
+
+Check the `-policy` flags and the `bind` command for more details.
 
 ## Builds
 
