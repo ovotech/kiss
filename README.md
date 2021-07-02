@@ -67,7 +67,7 @@ Check the `-policy` flags and the `bind` command for more details.
 
 We release binaries for the client. Please check the releases.
 
-We don't provide any public images for the server.
+We don't provide any public images for the server, but it should be trivial to build your own. Check our `./.github/workflows/build-release.yaml` if you're lost.
 
 ## Tokens
 
