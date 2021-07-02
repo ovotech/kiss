@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -23,6 +24,6 @@ func DeleteSecret(client pb.KISSClient, timeout time.Duration, namespace, name s
 	if err != nil {
 		log.Fatalf("[ERROR] Error occurred while deleting secret: %v\n", err)
 	} else {
-		log.Println("[INFO] Successfully deleted secret")
+		fmt.Println("Successfully deleted secret")
 	}
 }

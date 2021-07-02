@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -28,6 +29,6 @@ func BindSecret(
 	if err != nil {
 		log.Fatalf("[ERROR] Error occurred while binding secret to service account: %v\n", err)
 	} else {
-		log.Println("[INFO] Successfully bound secret to service account")
+		fmt.Println("Successfully bound secret to service account")
 	}
 }

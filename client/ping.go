@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -21,6 +22,6 @@ func Ping(client pb.KISSClient, timeout time.Duration, namespace string) {
 	if err != nil {
 		log.Fatalf("[ERROR] Error ocurred while sending ping: %v\n", err)
 	} else {
-		log.Println("[INFO] Successfully sent ping")
+		fmt.Println("Successfully sent ping")
 	}
 }

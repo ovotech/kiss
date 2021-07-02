@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -23,6 +24,6 @@ func DeleteSecretIAMPolicy(client pb.KISSClient, timeout time.Duration, namespac
 	if err != nil {
 		log.Fatalf("[ERROR] Error occurred while deleting secret IAM policy: %v\n", err)
 	} else {
-		log.Println("[INFO] Successfully deleted secret IAM policy")
+		fmt.Println("Successfully deleted secret IAM policy")
 	}
 }

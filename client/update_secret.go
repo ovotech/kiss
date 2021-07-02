@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -24,6 +25,6 @@ func UpdateSecret(client pb.KISSClient, timeout time.Duration, namespace, name, 
 	if err != nil {
 		log.Fatalf("[ERROR] Error occurred while updating secret: %v\n", err)
 	} else {
-		log.Println("[INFO] Successfully updated secret")
+		fmt.Println("Successfully updated secret")
 	}
 }

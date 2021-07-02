@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -23,6 +24,6 @@ func CreateSecretIAMPolicy(client pb.KISSClient, timeout time.Duration, namespac
 	if err != nil {
 		log.Fatalf("[ERROR] Error occurred while creating secret IAM policy: %v\n", err)
 	} else {
-		log.Println("[INFO] Successfully created secret IAM policy")
+		fmt.Println("Successfully created secret IAM policy")
 	}
 }

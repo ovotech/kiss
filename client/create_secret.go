@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -24,6 +25,6 @@ func CreateSecret(client pb.KISSClient, timeout time.Duration, namespace, name, 
 	if err != nil {
 		log.Fatalf("[ERROR] Error occurred while creating secret: %v\n", err)
 	} else {
-		log.Println("[INFO] Successfully created secret")
+		fmt.Println("Successfully created secret")
 	}
 }
