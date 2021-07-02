@@ -48,7 +48,7 @@ spec:
       name: foo
 ```
 
-## Synergy with k8s Secrets Store CSI driver
+## Synergy with AWS provider for k8s Secrets Store CSI driver
 
 If you're using the [AWS Secrets & Configuration Provider with your Kubernetes Secrets Store CSI driver](https://aws.amazon.com/blogs/security/how-to-use-aws-secrets-configuration-provider-with-kubernetes-secrets-store-csi-driver/) you can use `kiss` to:
 * automatically create AWS IAM policies with read permissions when creating secrets
