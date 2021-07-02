@@ -97,14 +97,14 @@ jobs:
     - name: Compile
       working-directory: ./client/cmd
       run: |
-        go build -o /tmp/kiss-${{ env.GOOS }}-${{ env.GOARCH }} .
+        go build -o /tmp/kiss-client-${{ env.GOOS }}-${{ env.GOARCH }} .
   
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ env.TAG }}
         files: |
-          /tmp/kiss-${{ env.GOOS }}-${{ env.GOARCH }}
+          /tmp/kiss-client-${{ env.GOOS }}-${{ env.GOARCH }}
           LICENSE
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -139,14 +139,14 @@ jobs:
     - name: Compile
       working-directory: ./client/cmd
       run: |
-        go build -o /tmp/kiss-${{ env.GOOS }}-${{ env.GOARCH }} .
+        go build -o /tmp/kiss-client-${{ env.GOOS }}-${{ env.GOARCH }} .
   
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ env.TAG }}
         files: |
-          /tmp/kiss-${{ env.GOOS }}-${{ env.GOARCH }}
+          /tmp/kiss-client-${{ env.GOOS }}-${{ env.GOARCH }}
           LICENSE
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -181,14 +181,14 @@ jobs:
     - name: Compile
       working-directory: ./client/cmd
       run: |
-        go build -o /tmp/kiss-${{ env.GOOS }}-${{ env.GOARCH }} .
+        go build -o /tmp/kiss-client-${{ env.GOOS }}-${{ env.GOARCH }} .
   
     - name: Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ env.TAG }}
         files: |
-          /tmp/kiss-${{ env.GOOS }}-${{ env.GOARCH }}
+          /tmp/kiss-client-${{ env.GOOS }}-${{ env.GOARCH }}
           LICENSE
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
