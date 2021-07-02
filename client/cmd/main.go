@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"sort"
 	"time"
 
 	"github.com/hashicorp/logutils"
@@ -26,6 +27,8 @@ var (
 	tokenPath  string
 	namespace  string
 	debug      bool
+
+	helpCmd = flag.NewFlagSet("help", flag.ExitOnError)
 
 	pingCmd = flag.NewFlagSet("ping", flag.ExitOnError)
 
@@ -61,6 +64,7 @@ var (
 	)
 
 	subcommands = map[string]*flag.FlagSet{
+		helpCmd.Name():         helpCmd,
 		pingCmd.Name():         pingCmd,
 		createSecretCmd.Name(): createSecretCmd,
 		listSecretsCmd.Name():  listSecretsCmd,
@@ -71,13 +75,31 @@ var (
 )
 
 func main() {
-	setupCommonFlags()
 
 	// Parse and validate subcommand and flags
 	// The first argument on the command line is the command
+	if len(os.Args) < 2 {
+		log.Fatalf("[ERROR] no subcommand provided, see help for more details.")
+	}
+
 	cmd := subcommands[os.Args[1]]
 	if cmd == nil {
 		log.Fatalf("[ERROR] unknown subcommand '%s', see help for more details.", os.Args[1])
+	}
+
+	setupCommonFlags()
+
+	if cmd.Name() == "help" {
+		fmt.Printf("Usage: %s [SUBCOMMAND] [OPTIONS]...\nAvailable subcommands:\n", os.Args[0])
+		keys := make([]string, 0, len(subcommands))
+		for k := range subcommands {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+		for _, name := range keys {
+			fmt.Printf("\t%s\n", name)
+		}
+		return
 	}
 
 	// Arguments 2 onwards are flags
