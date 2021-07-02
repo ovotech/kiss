@@ -6,6 +6,10 @@ AWS-based secrets management for Kubernetes.
 
 Leverages users' Kubernetes OIDC authentication tokens for AWS Secrets Manager secrets management. Can also manage AWS IAM policies for secrets if you're using the [AWS provider for the k8s Secrets Store CSI driver](https://aws.amazon.com/blogs/security/how-to-use-aws-secrets-configuration-provider-with-kubernetes-secrets-store-csi-driver/).
 
+You may be interested in this if you:
+* use AWS Secrets Manager as your k8s secrets store
+* use OIDC tokens for auth/z users against your k8s cluster
+
 ## Why?
 
 We're using [`external-secrets`](https://github.com/external-secrets/kubernetes-external-secrets) to synchronize AWS Secret Manager secrets in our k8s AWS account with k8s-native `Secret` resources.
