@@ -4,7 +4,7 @@ import "regexp"
 
 // Returns true if the input string is acceptable from a security point of view.
 func isValidString(input string) bool {
-	var isValidString = regexp.MustCompile(`^[1-9a-z-]+$`).MatchString
+	var isValidString = regexp.MustCompile(`^[1-9a-zA-Z-]+$`).MatchString
 
 	if isValidString(input) {
 		return true
