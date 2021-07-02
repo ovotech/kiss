@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -21,9 +22,8 @@ func ListSecrets(client pb.KISSClient, timeout time.Duration, namespace string) 
 	if err != nil {
 		log.Fatalf("[ERROR] Error occurred while listing secrets: %v\n", err)
 	} else {
-		log.Println("[INFO] Listing secrets:")
 		for _, secret := range response.Secrets {
-			log.Printf("[INFO] %s", secret)
+			fmt.Println(secret)
 		}
 	}
 }

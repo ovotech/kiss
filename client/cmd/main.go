@@ -82,10 +82,9 @@ func main() {
 
 	// Arguments 2 onwards are flags
 	cmd.Parse(os.Args[2:])
-	validateCommonParams()
-
 	// We initialize logging here because we need -debug from flags
 	initLogging()
+	validateCommonParams()
 
 	token, err := loadToken(&tokenPath)
 	if err != nil {
@@ -196,7 +195,7 @@ func validateCommonParams() {
 		if err != nil {
 			log.Fatalf("[ERROR] Failed to guess token path, use '-token-path' instead: %s", err)
 		}
-		log.Printf("[DEBUG] Token not explicitly given, we'll use this one: '%s'", tokenPath)
+		fmt.Printf("Token not explicitly given, we'll use this one: '%s'\n", tokenPath)
 	}
 }
 
