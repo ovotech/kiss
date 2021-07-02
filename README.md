@@ -8,7 +8,7 @@ Leverages users' Kubernetes OIDC authentication tokens for AWS Secrets Manager s
 
 You may be interested in this project if you:
 * use AWS Secrets Manager as your k8s secrets store
-* use OIDC tokens for auth/z users against your k8s cluster
+* use OIDC tokens for auth/z'ing users against your k8s cluster
 
 ## Why?
 
