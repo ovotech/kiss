@@ -54,14 +54,10 @@ Your OIDC tokens will vary depending on your setup. Kaluza's payloads look like 
 
 ```json
 {
-  ...
-  "cognito:groups": [
-    "kaluza:default",
-    "kaluza:security"
-  ],
+  "cognito:groups": ["kaluza:default", "kaluza:security"],
   "iss": "https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_AbCdEf",
-  "email": "user.name@kaluza.com"
-  ...
+  "email": "user.name@kaluza.com",
+  "...": "..."
 }
 ```
 
