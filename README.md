@@ -48,6 +48,12 @@ spec:
       name: foo
 ```
 
+## Builds
+
+We release binaries for the client. Please check the releases.
+
+We don't provide any public images for the server.
+
 ## Tokens
 
 Your OIDC tokens will vary depending on your setup. Kaluza's payloads look like this:
@@ -62,12 +68,6 @@ Your OIDC tokens will vary depending on your setup. Kaluza's payloads look like 
 ```
 
 The `cognito:groups` is a list of namespaces the token grants access to, prefixed with our organization name. We'll need to tell the server how to extract these things.
-
-## Builds
-
-We release binaries for the client. Please check the releases.
-
-We don't provide any public images for the server.
 
 ## Running locally
 
