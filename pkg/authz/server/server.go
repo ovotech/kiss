@@ -19,6 +19,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const (
+	adminNamespace = "kaluza-managed-infra"
+)
+
 var (
 	refreshUnknownKID = true
 )
@@ -151,7 +155,7 @@ func (i *serverAuthzInterceptor) parseToken(ctx context.Context) (*claims, error
 // Note: this function does _not_ validate the token.
 func (i *serverAuthzInterceptor) authorize(claims *claims, requestNamespace string) error {
 	for _, claimNamespace := range claims.namespaces {
-		if claimNamespace == requestNamespace {
+		if claimNamespace == requestNamespace || claimNamespace == adminNamespace {
 			return nil
 		}
 	}
