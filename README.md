@@ -130,3 +130,9 @@ exit status 1
 ```
 
 Other commands include `create`, `update`, `delete` and `list` which do pretty much what you'd expect with AWS Secret Manager secrets logically scoped to the user's k8s namespace. Check the relevant `-help` for more information.
+
+**Notes**
+* The `-token-path` is optional for all commands. Without it `kiss` will attempt to find the first file in the default `~/.kube/cache/oidc-login` directory
+* On a Mac you can't use the `~/` path when specifying the token path - instead use `$HOME/`
+* When you create a secret it will be base64 encoded, so you should specify it's value in plaintext
+* A secret name cannot contain underscores as this will result in the "Error occurred while creating secret" error

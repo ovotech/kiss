@@ -11,9 +11,6 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Staged manifest files
-k8s-monitor-*.yaml
-
 # Ignore go mod vendor files for local type checking
 vendor/
 
