@@ -34,7 +34,7 @@ var (
 
 	createSecretCmd    = flag.NewFlagSet("create", flag.ExitOnError)
 	createSecretName   = createSecretCmd.String("name", "", "The name of the secret.")
-	createSecretValue  = createSecretCmd.String("value", "", "The value of the secret.")
+	createSecretValue  = createSecretCmd.String("value", "", "The plaintext value of the secret.")
 	createSecretPolicy = createSecretCmd.Bool(
 		"policy",
 		false,
@@ -188,7 +188,7 @@ func setupCommonFlags() {
 			&serverAddr,
 			"server-addr",
 			"localhost:10000",
-			"The monitor server address in the format of host:port",
+			"The kiss server address in the format of host:port",
 		)
 		fs.DurationVar(
 			&timeout, "timeout", 30*time.Second, "The interval before a connection times out",
