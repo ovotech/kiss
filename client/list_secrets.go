@@ -9,7 +9,7 @@ import (
 	pb "github.com/ovotech/kiss/proto"
 )
 
-func ListSecrets(client pb.KISSClient, timeout time.Duration, namespace string) {
+func ListSecrets(client pb.KISSClient, timeout time.Duration, namespace string) []string {
 	log.Println("[DEBUG] Listing secrets...")
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -26,4 +26,6 @@ func ListSecrets(client pb.KISSClient, timeout time.Duration, namespace string) 
 			fmt.Println(secret)
 		}
 	}
+
+	return response.Secrets
 }

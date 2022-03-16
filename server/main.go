@@ -49,6 +49,8 @@ func Run(
 	namespacesRegex *string,
 	identifierKey *string,
 	adminNamespace *string,
+	roleBindingPrefix *string,
+	kubeconfigPath *string,
 ) (*grpc.Server, error) {
 	flag.Parse()
 
@@ -64,6 +66,8 @@ func Run(
 		*namespacesRegex,
 		*identifierKey,
 		*adminNamespace,
+		*roleBindingPrefix,
+		*kubeconfigPath,
 	)
 
 	grpcServer := grpc.NewServer(

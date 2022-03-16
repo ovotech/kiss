@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
+	"github.com/ovotech/kiss/pkg/authz/utils"
+	"github.com/ovotech/kiss/pkg/k8s"
 	"github.com/ovotech/kiss/pkg/keyfunc"
 	pb "github.com/ovotech/kiss/proto"
 	"github.com/rs/zerolog/log"
@@ -24,11 +25,13 @@ var (
 )
 
 type serverAuthzInterceptor struct {
-	jwks            *keyfunc.JWKs
-	namespacesKey   string
-	namespacesRegex string
-	identifierKey   string
-	adminNamespace  string
+	jwks              *keyfunc.JWKs
+	namespacesKey     string
+	namespacesRegex   string
+	identifierKey     string
+	adminNamespace    string
+	roleBindingPrefix string // Prefix for k8s rolebinding name
+	kubeconfigPath    string
 }
 
 type RequestWithMetadata interface {
@@ -51,7 +54,7 @@ type claims struct {
 // identiferKey is the key to a unique identifier in the claim, for example the email. This is for
 // auditing purposes.
 func NewServerAuthzInterceptor(
-	jwksURL, namespacesKey, namespacesRegex, identifierKey, adminNamespace string,
+	jwksURL, namespacesKey, namespacesRegex, identifierKey, adminNamespace string, roleBindingPrefix string, kubeconfigPath string,
 ) *serverAuthzInterceptor {
 	jwks, err := keyfunc.Get(jwksURL, keyfunc.Options{RefreshUnknownKID: &refreshUnknownKID})
 	if err != nil {
@@ -59,11 +62,13 @@ func NewServerAuthzInterceptor(
 	}
 
 	return &serverAuthzInterceptor{
-		jwks:            jwks,
-		namespacesKey:   namespacesKey,
-		namespacesRegex: namespacesRegex,
-		identifierKey:   identifierKey,
-		adminNamespace:  adminNamespace,
+		jwks:              jwks,
+		namespacesKey:     namespacesKey,
+		namespacesRegex:   namespacesRegex,
+		identifierKey:     identifierKey,
+		adminNamespace:    adminNamespace,
+		roleBindingPrefix: roleBindingPrefix,
+		kubeconfigPath:    kubeconfigPath,
 	}
 }
 
@@ -86,7 +91,7 @@ func (i *serverAuthzInterceptor) Unary() grpc.UnaryServerInterceptor {
 			return nil, status.Errorf(codes.Unauthenticated, err.Error())
 		}
 
-		// errors if user is not authorized to manipulate a secret for the given namespace
+		// Check which teams are allowed to access namespace from k8s role bindings
 		err = i.authorize(claims, mdr.GetMetadata().GetNamespace())
 		if err != nil {
 			auditLog(
@@ -152,18 +157,37 @@ func (i *serverAuthzInterceptor) parseToken(ctx context.Context) (*claims, error
 // requestNamespace. This assumes the token has already been validated.
 // Note: this function does _not_ validate the token.
 func (i *serverAuthzInterceptor) authorize(claims *claims, requestNamespace string) error {
-	for _, claimNamespace := range claims.namespaces {
-		if claimNamespace == requestNamespace || (i.adminNamespace != "" && i.adminNamespace == claimNamespace) {
-			return nil
+
+	// Verify that namespace in token matches rolebinding
+	claimValid, err := k8s.VerifyNamespaceClaims(requestNamespace, claims.namespaces, i.roleBindingPrefix, i.namespacesRegex, i.kubeconfigPath)
+	if err != nil {
+
+		return fmt.Errorf(
+			"server failed to verify namespace claims for user '%s' namespace '%s' %w",
+			claims.identifier,
+			requestNamespace,
+			err,
+		)
+	}
+	if claimValid {
+		return nil
+	}
+	if i.adminNamespace != "" {
+
+		for _, claimNamespace := range claims.namespaces {
+
+			// Check Admin namespace
+			if i.adminNamespace == claimNamespace {
+				return nil
+			}
 		}
 	}
 
-	return errors.New(
-		fmt.Sprintf(
-			"user '%s' is not authorized for namespace '%s'",
-			claims.identifier,
-			requestNamespace,
-		),
+	return fmt.Errorf(
+
+		"user '%s' is not authorized for namespace '%s'",
+		claims.identifier,
+		requestNamespace,
 	)
 }
 
@@ -188,14 +212,14 @@ func (i *serverAuthzInterceptor) getCustomClaims(token *jwt.Token) (*claims, err
 	if val, ok := payload[i.identifierKey]; ok {
 		json.Unmarshal(val, &identifier)
 	} else {
-		return nil, errors.New(fmt.Sprintf("failed unmarshalling '%s' from token", i.identifierKey))
+		return nil, fmt.Errorf("failed unmarshalling '%s' from token", i.identifierKey)
 	}
 
 	var rawNamespaces []string
 	if val, ok := payload[i.namespacesKey]; ok {
 		json.Unmarshal(val, &rawNamespaces)
 	} else {
-		return nil, errors.New(fmt.Sprintf("failed unmarshalling '%s' from token", i.namespacesKey))
+		return nil, fmt.Errorf("failed unmarshalling '%s' from token", i.namespacesKey)
 	}
 
 	// If we don't have a regexp to extract namespaces from the raw namespaces list, we're done
@@ -214,21 +238,6 @@ func (i *serverAuthzInterceptor) getCustomClaims(token *jwt.Token) (*claims, err
 	//   ],
 	//
 	// and we want to get the namespaces 'default' and 'kube-system'.
-	re := regexp.MustCompile(i.namespacesRegex)
-	var namespaces []string
-	for _, n := range rawNamespaces {
-		matches := re.FindStringSubmatch(n)
-		if len(matches) != 2 {
-			return nil, errors.New(
-				fmt.Sprintf(
-					"failed to extract namespace from '%s' using regexp `%s`",
-					n,
-					i.namespacesRegex,
-				),
-			)
-		}
-		namespaces = append(namespaces, matches[1])
-	}
-
-	return &claims{identifier: identifier, namespaces: namespaces}, nil
+	namespaces, err := utils.ExtractNamespacesFromClaims(i.namespacesRegex, rawNamespaces)
+	return &claims{identifier: identifier, namespaces: namespaces}, err
 }
