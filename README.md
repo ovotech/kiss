@@ -23,8 +23,10 @@ Since we were already using OIDC tokens for user auth/z to the cluster with `kub
 
 Our service creates AWS Secrets Manager secrets with the following naming convention:
 
+**Breaking Change**
+*As of version 0.1.0, the secret naming convention has been updated*
 ```
-k8s-secret_secret-namespace_secret-name
+k8s-secret-secret-namespace-secret-name
 ```
 
 We then have `external-secrets` annotations on our namespaces to only allow `ExternalSecret` resources in that namespace to sync with AWS Secrets Manager secrets logically scoped to the namespace. For example, this shows a namespace called `security` that is only allowed to read AWS Secrets Manager secrets prefixed by `k8s-secret_security_`:
@@ -35,7 +37,7 @@ kind: Namespace
 metadata:
   name: security
   annotations:
-    externalsecrets.kubernetes-client.io/permitted-key-name: "k8s-secret_security_.*"
+    externalsecrets.kubernetes-client.io/permitted-key-name: "k8s-secret_security-.*"
 ```
 
 A member of the `security` namespace can then create a secret with `kiss` and use it as such:
