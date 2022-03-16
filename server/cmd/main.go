@@ -59,6 +59,12 @@ var (
 		"",
 		"The admin cognito group that can manage secrets in all namespaces",
 	)
+	roleBindingPrefix = flag.String(
+		"rolebinding-prefix",
+		"",
+		"Prefix for K8s rolebinding name",
+	)
+	kubeconfigPath = flag.String("kubeconfig-path", "", "Path to Kubeconfig file. Defaults to home directory.")
 )
 
 func main() {
@@ -69,7 +75,7 @@ func main() {
 	}
 
 	var awsManager *aws.Manager
-	if *awsWebIdTokenPath == "" {
+	if len(*awsWebIdTokenPath) == 0 {
 		awsManager = aws.NewManagerWithDefaultConfig(
 			*iamRolePrefix,
 			*secretPrefix,
@@ -107,6 +113,8 @@ func main() {
 		namespacesRegex,
 		identifierKey,
 		adminNamespace,
+		roleBindingPrefix,
+		kubeconfigPath,
 	)
 	if err != nil {
 		log.Fatal().Msgf("Error starting server: %+v", err)

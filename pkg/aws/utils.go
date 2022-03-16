@@ -38,7 +38,7 @@ func (m *Manager) makeSecretPolicyARN(namespace, name string) string {
 // (prefix_)namespace_name
 func (m *Manager) makeSecretName(namespace, name string) string {
 	if m.secretPrefix == "" {
-		return fmt.Sprintf("%s_%s", namespace, name)
+		return fmt.Sprintf("%s-%s", namespace, name)
 	}
-	return fmt.Sprintf("%s_%s_%s", m.secretPrefix, namespace, name)
+	return fmt.Sprintf("%s-%s-%s", m.secretPrefix, namespace, name)
 }

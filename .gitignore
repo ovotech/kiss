@@ -16,3 +16,6 @@ vendor/
 
 # Ignore test keys
 *.pem
+
+codeql
+codeql-go/

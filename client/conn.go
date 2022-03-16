@@ -1,9 +1,11 @@
 package client
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"log"
+	"strconv"
 	"time"
 
 	"google.golang.org/grpc"
@@ -36,11 +38,15 @@ func GetConnection(
 	opts = append(opts,
 		grpc.WithBlock(),
 		grpc.WithUnaryInterceptor(authInterceptor.Unary()),
+		grpc.FailOnNonTempDialError(true),
 	)
 
 	// Establish gRPC connection
-	log.Print("[DEBUG] Creating gRPC Dial...")
-	conn, err := grpc.Dial(serverAddr, opts...)
+	log.Printf("[DEBUG] Creating gRPC Dial... (%s) secure=%s", serverAddr, strconv.FormatBool(secure))
+	// conn, err := grpc.Dial(serverAddr, opts...)
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	conn, err := grpc.DialContext(ctx, serverAddr, opts...)
 
 	return conn, err
 }

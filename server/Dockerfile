@@ -1,4 +1,4 @@
-FROM golang:1.15-alpine AS builder
+FROM golang:1.16-alpine AS builder
 
 # Run Docker container as non-root, borrowed from (Apache License 2.0):
 # https://github.com/controlplaneio/kubesec/blob/master/Dockerfile.scratch

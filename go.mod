@@ -1,6 +1,6 @@
 module github.com/ovotech/kiss
 
-go 1.14
+go 1.16
 
 require (
 	github.com/aws/aws-sdk-go-v2 v1.6.0
@@ -10,9 +10,12 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/secretsmanager v1.3.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.4.1
 	github.com/aws/smithy-go v1.4.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/golang/protobuf v1.4.2
+	github.com/golang-jwt/jwt v3.2.2+incompatible
+	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/logutils v1.0.0
 	github.com/rs/zerolog v1.22.0
 	google.golang.org/grpc v1.38.0
+	k8s.io/api v0.22.4
+	k8s.io/apimachinery v0.22.4
+	k8s.io/client-go v0.22.4
 )

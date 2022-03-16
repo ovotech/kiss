@@ -1,7 +1,7 @@
 package main
 
 import (
-	"encoding/json"
+	"bufio"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -9,10 +9,12 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/logutils"
 	"github.com/ovotech/kiss/client"
+
 	pb "github.com/ovotech/kiss/proto"
 )
 
@@ -107,8 +109,7 @@ func main() {
 	// We initialize logging here because we need -debug from flags
 	initLogging()
 	validateCommonParams()
-
-	token, err := loadToken(&tokenPath)
+	token, err := client.LoadToken(&tokenPath)
 	if err != nil {
 		log.Fatalf("[ERROR] Failed to load token from %s", tokenPath)
 	}
@@ -127,8 +128,21 @@ func main() {
 	case "ping":
 		client.Ping(kissClient, timeout, namespace)
 	case "create":
-		if *createSecretName == "" || *createSecretValue == "" {
-			log.Fatalf("[ERROR] -name and -value are required, see help for more details.")
+		if *createSecretName == "" {
+			log.Fatalf("[ERROR] -name is required, see help for more details.")
+		}
+		if *createSecretValue == "" {
+
+			reader := bufio.NewReader(os.Stdin)
+			var err error
+			fmt.Print("Enter secret value:")
+			input, err := reader.ReadString('\n')
+			if err != nil {
+				log.Fatalln("[ERROR] failed to read input from stdin. Either -value is required or you provided an invalid input")
+			}
+
+			*createSecretValue = strings.TrimSpace(input) // otherwise, we would have a blank line
+
 		}
 		client.CreateSecret(kissClient, timeout, namespace, *createSecretName, *createSecretValue)
 		if *createSecretPolicy {
@@ -138,7 +152,7 @@ func main() {
 		client.ListSecrets(kissClient, timeout, namespace)
 	case "bind":
 		if *bindSecretName == "" || *bindSecretServiceAccount == "" {
-			log.Fatalf("[ERROR] -name and -service-acount are required, see help for more details")
+			log.Fatalf("[ERROR] -name and -service-account are required, see help for more details")
 		}
 		client.BindSecret(
 			kissClient,
@@ -148,10 +162,23 @@ func main() {
 			*bindSecretServiceAccount,
 		)
 	case "update":
-		if *updateSecretName == "" || *updateSecretValue == "" {
+		if *updateSecretName == "" {
 			log.Fatalf("[ERROR] -name and -value are required, see help for more details.")
 		}
+		if *updateSecretValue == "" {
+
+			reader := bufio.NewReader(os.Stdin)
+			var err error
+			fmt.Print("Enter secret value:")
+			input, err := reader.ReadString('\n')
+			if err != nil {
+				log.Fatalln("[ERROR] failed to read input from stdin. Either -value is required or you provided an invalid input")
+			}
+			*updateSecretValue = strings.TrimSpace(input) // otherwise, we would have a blank line
+		}
+
 		client.UpdateSecret(kissClient, timeout, namespace, *updateSecretName, *updateSecretValue)
+
 	case "delete":
 		if *deleteSecretName == "" {
 			log.Fatalf("[ERROR] -name is required, see help for more details.")
@@ -191,7 +218,7 @@ func setupCommonFlags() {
 			"The kiss server address in the format of host:port",
 		)
 		fs.DurationVar(
-			&timeout, "timeout", 30*time.Second, "The interval before a connection times out",
+			&timeout, "timeout", 10*time.Second, "The interval before a connection times out",
 		)
 		fs.StringVar(
 			&tokenPath,
@@ -240,30 +267,4 @@ func guessTokenPath() (string, error) {
 	tokenPath := path.Join(oidcPath, files[0].Name())
 
 	return tokenPath, nil
-}
-
-func loadToken(tokenPath *string) (*string, error) {
-	jsonFile, err := os.Open(*tokenPath)
-	if err != nil {
-		return nil, err
-	}
-	defer jsonFile.Close()
-
-	bytes, err := ioutil.ReadAll(jsonFile)
-	if err != nil {
-		return nil, err
-	}
-
-	var tokenMap map[string]string
-	err = json.Unmarshal([]byte(bytes), &tokenMap)
-	if err != nil {
-		return nil, err
-	}
-
-	idToken, ok := tokenMap["id_token"]
-	if !ok {
-		return nil, fmt.Errorf("no 'id_token' field in token file")
-	}
-
-	return &idToken, nil
 }
