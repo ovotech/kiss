@@ -13,6 +13,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	grpctrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/google.golang.org/grpc"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
 	serverauthz "github.com/ovotech/kiss/pkg/authz/server"
 	"github.com/ovotech/kiss/pkg/aws"
@@ -26,6 +28,7 @@ var (
 func init() {
 	// Set up zerolog
 	initLogging()
+	initTracing()
 }
 
 type kissServer struct {
@@ -71,7 +74,10 @@ func Run(
 	)
 
 	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(authInterceptor.Unary()),
+		grpc.ChainUnaryInterceptor(
+			authInterceptor.Unary(),
+			grpctrace.UnaryServerInterceptor(grpctrace.WithServiceName("kiss")),
+		),
 	)
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	pb.RegisterKISSServer(grpcServer, newServer())
@@ -116,4 +122,14 @@ func initLogging() {
 	// Set log level (trace, debug, info, warn, error, fatal, panic) Default info
 	setLogLevel()
 	log.Info().Msgf("Logging level set to %s", zerolog.GlobalLevel())
+}
+
+func initTracing() {
+	tracer.Start(
+		tracer.WithService("kiss"),
+	)
+
+	// When the tracer is stopped, it will flush everything it has to the Datadog Agent before quitting.
+	// Make sure this line stays in your main function.
+	defer tracer.Stop()
 }
