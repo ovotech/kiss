@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: prod
     env:
-      ECR_REPOSITORY: kiss-server
+      ECR_REPOSITORY: orion-security-engineering/kiss
       TAG: ${{ github.event.workflow_run.head_branch }}
     steps:
     - name: Checkout code
