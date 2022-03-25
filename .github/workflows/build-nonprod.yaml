@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: nonprod
     env:
-      ECR_REPOSITORY: kiss
+      ECR_REPOSITORY: orion-security-engineering/kiss
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
