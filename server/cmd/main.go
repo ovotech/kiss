@@ -65,6 +65,7 @@ var (
 		"Prefix for K8s rolebinding name",
 	)
 	kubeconfigPath = flag.String("kubeconfig-path", "", "Path to Kubeconfig file. Defaults to home directory.")
+	enableTracing  = flag.Bool("enable-tracing", true, "Enable DataDog tracing")
 )
 
 func main() {
@@ -115,6 +116,7 @@ func main() {
 		adminNamespace,
 		roleBindingPrefix,
 		kubeconfigPath,
+		*enableTracing,
 	)
 	if err != nil {
 		log.Fatal().Msgf("Error starting server: %+v", err)

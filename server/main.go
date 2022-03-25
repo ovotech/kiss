@@ -28,7 +28,6 @@ var (
 func init() {
 	// Set up zerolog
 	initLogging()
-	initTracing()
 }
 
 type kissServer struct {
@@ -54,6 +53,7 @@ func Run(
 	adminNamespace *string,
 	roleBindingPrefix *string,
 	kubeconfigPath *string,
+	enableTracing bool,
 ) (*grpc.Server, error) {
 	flag.Parse()
 
@@ -72,13 +72,23 @@ func Run(
 		*roleBindingPrefix,
 		*kubeconfigPath,
 	)
+	var grpcServer *grpc.Server
+	if enableTracing {
+		initTracing()
+		grpcServer = grpc.NewServer(
+			grpc.ChainUnaryInterceptor(
+				authInterceptor.Unary(),
+				grpctrace.UnaryServerInterceptor(grpctrace.WithServiceName("kiss")),
+			),
+		)
+	}
 
-	grpcServer := grpc.NewServer(
+	grpcServer = grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			authInterceptor.Unary(),
-			grpctrace.UnaryServerInterceptor(grpctrace.WithServiceName("kiss")),
 		),
 	)
+
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	pb.RegisterKISSServer(grpcServer, newServer())
 
