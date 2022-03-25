@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: nonprod
     env:
-      ECR_REPOSITORY: kiss-server
+      ECR_REPOSITORY: kiss
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -69,7 +69,7 @@ jobs:
         context: ./
         file: server/Dockerfile
         push: true
-        tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_image_tag.outputs.tag }}
+        tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.get_image_tag.outputs.tag }}-rc
         cache-from: type=local,src=/tmp/.buildx-cache
         cache-to: type=local,dest=/tmp/.buildx-cache-new
         builder: ${{ steps.buildx.outputs.name }}
