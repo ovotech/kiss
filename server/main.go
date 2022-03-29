@@ -73,12 +73,14 @@ func Run(
 		*kubeconfigPath,
 	)
 	var grpcServer *grpc.Server
+	// var statsd *statsd.Client
 	if enableTracing {
 		initTracing()
+
 		grpcServer = grpc.NewServer(
 			grpc.ChainUnaryInterceptor(
 				authInterceptor.Unary(),
-				grpctrace.UnaryServerInterceptor(grpctrace.WithServiceName("kiss")),
+				grpctrace.UnaryServerInterceptor(),
 			),
 		)
 	}
@@ -135,9 +137,12 @@ func initLogging() {
 }
 
 func initTracing() {
-	tracer.Start(
-		tracer.WithService("kiss"),
-	)
+
+	traceUrl, ok := os.LookupEnv("DD_TRACE_AGENT_URL")
+	if !ok {
+		log.Fatal().Msg("Failed to initialise tracing, check DD_TRACE_AGENT_URL env var")
+	}
+	tracer.Start(tracer.WithUDS(traceUrl))
 
 	// When the tracer is stopped, it will flush everything it has to the Datadog Agent before quitting.
 	// Make sure this line stays in your main function.

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	statsd "github.com/DataDog/datadog-go/v5/statsd"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
@@ -22,6 +23,7 @@ const (
 type Manager struct {
 	smclient     *awssm.Client
 	iamclient    *awsiam.Client
+	statsdclient *statsd.Client
 	rolePrefix   string
 	secretPrefix string
 	accountId    string
@@ -32,6 +34,7 @@ func NewManagerWithDefaultConfig(
 	rolePrefix string,
 	secretPrefix string,
 	region string,
+	statsdTraceUrl string,
 ) *Manager {
 	ctx := context.Background()
 
@@ -49,9 +52,21 @@ func NewManagerWithDefaultConfig(
 		log.Fatalf("Unable to get account identifer from AWS STS: %v", err)
 	}
 
+	var statsdClient *statsd.Client
+	if statsdTraceUrl != "" {
+
+		client, err := statsd.New(statsdTraceUrl)
+		if err != nil {
+			log.Fatalf("Unable to initialise DataDog metric client: %v", err)
+		}
+		statsdClient = client
+
+	}
+
 	return &Manager{
 		smclient:     awssm.NewFromConfig(cfg),
 		iamclient:    awsiam.NewFromConfig(cfg),
+		statsdclient: statsdClient,
 		rolePrefix:   rolePrefix,
 		secretPrefix: secretPrefix,
 		accountId:    *callerIdentity.Account,
