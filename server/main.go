@@ -138,9 +138,9 @@ func initLogging() {
 
 func initTracing() {
 
-	traceUrl, ok := os.LookupEnv("DD_TRACE_AGENT_URL")
+	traceUrl, ok := os.LookupEnv("DOGSTATSD_HOST_IP")
 	if !ok {
-		log.Fatal().Msg("Failed to initialise tracing, check DD_TRACE_AGENT_URL env var")
+		log.Fatal().Msg("Failed to initialise tracing, check DOGSTATSD_HOST_IP env var")
 	}
 	tracer.Start(tracer.WithUDS(traceUrl))
 
