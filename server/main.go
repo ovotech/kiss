@@ -77,7 +77,7 @@ func Run(
 	if enableTracing {
 
 		log.Info().Msg("Starting tracing...")
-		hostUrl, _ := os.LookupEnv("DD_AGENT_HOST")
+		// hostUrl, _ := os.LookupEnv("DD_AGENT_HOST")
 		// statsd, err := statsd.New(hostUrl)
 		if err != nil {
 			log.Fatal().Msgf("%w", err)
