@@ -79,9 +79,9 @@ func Run(
 		log.Info().Msg("Starting tracing...")
 		// hostUrl, _ := os.LookupEnv("DD_AGENT_HOST")
 		// statsd, err := statsd.New(hostUrl)
-		if err != nil {
-			log.Fatal().Msgf("%w", err)
-		}
+		// if err != nil {
+		// 	log.Fatal().Msg()
+		// }
 		tracer.Start(tracer.WithRuntimeMetrics(), tracer.WithDebugMode(true))
 
 		// When the tracer is stopped, it will flush everything it has to the Datadog Agent before quitting.
