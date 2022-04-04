@@ -75,12 +75,23 @@ func Run(
 	var grpcServer *grpc.Server
 	// var statsd *statsd.Client
 	if enableTracing {
-		initTracing()
+
+		log.Info().Msg("Starting tracing...")
+		hostUrl, _ := os.LookupEnv("DD_AGENT_HOST")
+		// statsd, err := statsd.New(hostUrl)
+		if err != nil {
+			log.Fatal().Msgf("%w", err)
+		}
+		tracer.Start(tracer.WithRuntimeMetrics(), tracer.WithDebugMode(true))
+
+		// When the tracer is stopped, it will flush everything it has to the Datadog Agent before quitting.
+		// Make sure this line stays in your main function.
+		defer tracer.Stop()
 
 		grpcServer = grpc.NewServer(
 			grpc.ChainUnaryInterceptor(
 				authInterceptor.Unary(),
-				grpctrace.UnaryServerInterceptor(),
+				grpctrace.UnaryServerInterceptor(grpctrace.WithAnalytics(true)),
 			),
 		)
 	}
@@ -134,17 +145,4 @@ func initLogging() {
 	// Set log level (trace, debug, info, warn, error, fatal, panic) Default info
 	setLogLevel()
 	log.Info().Msgf("Logging level set to %s", zerolog.GlobalLevel())
-}
-
-func initTracing() {
-
-	traceUrl, ok := os.LookupEnv("DOGSTATSD_HOST_IP")
-	if !ok {
-		log.Fatal().Msg("Failed to initialise tracing, check DOGSTATSD_HOST_IP env var")
-	}
-	tracer.Start(tracer.WithUDS(traceUrl))
-
-	// When the tracer is stopped, it will flush everything it has to the Datadog Agent before quitting.
-	// Make sure this line stays in your main function.
-	defer tracer.Stop()
 }
