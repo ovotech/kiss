@@ -73,18 +73,9 @@ func Run(
 		*kubeconfigPath,
 	)
 	var grpcServer *grpc.Server
-	// var statsd *statsd.Client
 	if enableTracing {
 
 		log.Info().Msg("Starting tracing...")
-		// hostUrl, _ := os.LookupEnv("DD_AGENT_HOST")
-		// statsd, err := statsd.New(hostUrl)
-		// if err != nil {
-		// 	log.Fatal().Msg()
-		// }
-
-		// When the tracer is stopped, it will flush everything it has to the Datadog Agent before quitting.
-		// Make sure this line stays in your main function.
 
 		grpcServer = grpc.NewServer(
 			grpc.ChainUnaryInterceptor(
@@ -92,13 +83,14 @@ func Run(
 				grpctrace.UnaryServerInterceptor(grpctrace.WithAnalytics(true)),
 			),
 		)
-	}
+	} else {
 
-	grpcServer = grpc.NewServer(
-		grpc.ChainUnaryInterceptor(
-			authInterceptor.Unary(),
-		),
-	)
+		grpcServer = grpc.NewServer(
+			grpc.ChainUnaryInterceptor(
+				authInterceptor.Unary(),
+			),
+		)
+	}
 
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	pb.RegisterKISSServer(grpcServer, newServer())
