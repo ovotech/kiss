@@ -79,8 +79,8 @@ func Run(
 
 		grpcServer = grpc.NewServer(
 			grpc.ChainUnaryInterceptor(
-				authInterceptor.Unary(),
 				grpctrace.UnaryServerInterceptor(grpctrace.WithAnalytics(true)),
+				authInterceptor.Unary(),
 			),
 		)
 	} else {
