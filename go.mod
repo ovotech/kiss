@@ -3,7 +3,6 @@ module github.com/ovotech/kiss
 go 1.16
 
 require (
-	github.com/DataDog/datadog-go v4.8.2+incompatible
 	github.com/DataDog/datadog-go/v5 v5.1.0
 	github.com/aws/aws-sdk-go-v2 v1.6.0
 	github.com/aws/aws-sdk-go-v2/config v1.3.0

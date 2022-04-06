@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
 	"github.com/ovotech/kiss/pkg/aws"
 	"github.com/ovotech/kiss/server"
@@ -69,6 +70,9 @@ var (
 )
 
 func main() {
+
+	tracer.Start(tracer.WithRuntimeMetrics())
+	defer tracer.Stop()
 	flag.Parse()
 
 	if *jwksURL == "" {
