@@ -85,7 +85,6 @@ func main() {
 			*iamRolePrefix,
 			*secretPrefix,
 			*awsRegion,
-			"",
 		)
 	} else {
 		// ARN is required for web id token auth

@@ -32,7 +32,6 @@ func NewManagerWithDefaultConfig(
 	rolePrefix string,
 	secretPrefix string,
 	region string,
-	statsdTraceUrl string,
 ) *Manager {
 	ctx := context.Background()
 
