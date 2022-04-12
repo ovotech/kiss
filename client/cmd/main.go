@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	b64 "encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -13,6 +15,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/logutils"
+
 	"github.com/ovotech/kiss/client"
 
 	pb "github.com/ovotech/kiss/proto"
@@ -23,12 +26,13 @@ const (
 )
 
 var (
-	secure     bool
-	serverAddr string
-	timeout    time.Duration
-	tokenPath  string
-	namespace  string
-	debug      bool
+	secure      bool
+	serverAddr  string
+	timeout     time.Duration
+	tokenPath   string
+	namespace   string
+	debug       bool
+	interactive bool
 
 	helpCmd = flag.NewFlagSet("help", flag.ExitOnError)
 
@@ -228,6 +232,7 @@ func setupCommonFlags() {
 		)
 		fs.StringVar(&namespace, "namespace", "", "The namespace the secret is scoped to.")
 		fs.BoolVar(&debug, "debug", false, "Enable debug log")
+		fs.BoolVar(&interactive, "interactive", false, "Enable interactive mode")
 	}
 }
 
@@ -239,12 +244,28 @@ func validateCommonParams() {
 	if tokenPath == "" {
 		// User hasn't given us a path to a token
 		// We'll try to find it ourselves.
-		var err error
-		tokenPath, err = guessTokenPath()
-		if err != nil {
-			log.Fatalf("[ERROR] Failed to guess token path, use '-token-path' instead: %s", err)
+		if interactive {
+
+			var err error
+			tokenPaths, err := getTokenPaths()
+			if err != nil {
+				log.Fatalf("[ERROR] Failed to obtain token path, use '-token-path' instead: %s", err)
+			}
+			fmt.Printf("Token not explicitly given, please select one\n")
+			for _, path := range tokenPaths {
+				poolId, _ := getTokenInfo(path)
+				fmt.Printf("%s -> %s\n", path, poolId)
+			}
+			fmt.Println("Token path:")
+			fmt.Scanln(&tokenPath)
+		} else {
+			var err error
+			tokenPath, err = guessTokenPath()
+			fmt.Printf("Token not explicitly given, attempting to use %s by default\n", tokenPath)
+			if err != nil {
+				log.Fatalf("[ERROR] Failed to guess token path, use '-token-path' instead: %s", err)
+			}
 		}
-		fmt.Printf("Token not explicitly given, we'll use this one: '%s'\n", tokenPath)
 	}
 }
 
@@ -267,4 +288,84 @@ func guessTokenPath() (string, error) {
 	tokenPath := path.Join(oidcPath, files[0].Name())
 
 	return tokenPath, nil
+}
+
+func getTokenPaths() ([]string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return []string{}, err
+	}
+
+	oidcPath := path.Join(homeDir, defaultTokenPath)
+	files, err := ioutil.ReadDir(oidcPath)
+	if err != nil {
+		return []string{}, err
+	}
+
+	if len(files) < 1 {
+		return []string{}, fmt.Errorf("no token file in %s", oidcPath)
+	}
+	tokenPaths := []string{}
+	for _, file := range files {
+		filePath := path.Join(oidcPath, file.Name())
+		tokenPaths = append(tokenPaths, filePath)
+	}
+
+	return tokenPaths, nil
+
+}
+
+type CognitoJWT struct {
+	AtHash        string   `json:"at_hash"`
+	Sub           string   `json:"sub"`
+	CognitoGroups []string `json:"cognito:groups"`
+	EmailVerified bool     `json:"email_verified"`
+	// Issuer
+	Iss             string `json:"iss"`
+	CognitoUsername string `json:"cognito:username"`
+	Nonce           string `json:"nonce"`
+	OriginJti       string `json:"origin_jti"`
+	Aud             string `json:"aud"`
+	Identities      []struct {
+		UserID       string      `json:"userId"`
+		ProviderName string      `json:"providerName"`
+		ProviderType string      `json:"providerType"`
+		Issuer       interface{} `json:"issuer"`
+		Primary      string      `json:"primary"`
+		DateCreated  string      `json:"dateCreated"`
+	} `json:"identities"`
+	TokenUse string `json:"token_use"`
+	AuthTime int    `json:"auth_time"`
+	Exp      int    `json:"exp"`
+	Iat      int    `json:"iat"`
+	Jti      string `json:"jti"`
+	Email    string `json:"email"`
+}
+
+func getTokenInfo(tokenPath string) (string, error) {
+
+	token, err := client.LoadToken(&tokenPath)
+
+	if err != nil {
+		log.Fatal("Failed to load token")
+	}
+
+	b64Payload := strings.Split(*token, ".")[1]
+	strPayload, err := b64.RawStdEncoding.DecodeString(b64Payload)
+
+	if err != nil {
+		log.Fatal("Failed to parse token")
+	}
+
+	payload := CognitoJWT{}
+	err = json.Unmarshal(strPayload, &payload)
+	if err != nil {
+		return "", err
+	}
+	// Extract Pool ID from URL
+	poolIdSplit := strings.Split(payload.Iss, "/")
+	poolId := poolIdSplit[len(poolIdSplit)-1]
+
+	return poolId, err
+
 }
