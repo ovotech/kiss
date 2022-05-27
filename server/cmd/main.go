@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/rs/zerolog/log"
+	"gopkg.in/DataDog/dd-trace-go.v1/ddtrace/tracer"
 
 	"github.com/ovotech/kiss/pkg/aws"
 	"github.com/ovotech/kiss/server"
@@ -65,9 +66,13 @@ var (
 		"Prefix for K8s rolebinding name",
 	)
 	kubeconfigPath = flag.String("kubeconfig-path", "", "Path to Kubeconfig file. Defaults to home directory.")
+	enableTracing  = flag.Bool("enable-tracing", true, "Enable DataDog tracing")
 )
 
 func main() {
+
+	tracer.Start(tracer.WithRuntimeMetrics())
+	defer tracer.Stop()
 	flag.Parse()
 
 	if *jwksURL == "" {
@@ -115,6 +120,7 @@ func main() {
 		adminNamespace,
 		roleBindingPrefix,
 		kubeconfigPath,
+		*enableTracing,
 	)
 	if err != nil {
 		log.Fatal().Msgf("Error starting server: %+v", err)

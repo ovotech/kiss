@@ -13,6 +13,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	grpctrace "gopkg.in/DataDog/dd-trace-go.v1/contrib/google.golang.org/grpc"
 
 	serverauthz "github.com/ovotech/kiss/pkg/authz/server"
 	"github.com/ovotech/kiss/pkg/aws"
@@ -26,6 +27,7 @@ var (
 func init() {
 	// Set up zerolog
 	initLogging()
+
 }
 
 type kissServer struct {
@@ -51,6 +53,7 @@ func Run(
 	adminNamespace *string,
 	roleBindingPrefix *string,
 	kubeconfigPath *string,
+	enableTracing bool,
 ) (*grpc.Server, error) {
 	flag.Parse()
 
@@ -69,10 +72,26 @@ func Run(
 		*roleBindingPrefix,
 		*kubeconfigPath,
 	)
+	var grpcServer *grpc.Server
+	if enableTracing {
 
-	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(authInterceptor.Unary()),
-	)
+		log.Info().Msg("Starting tracing...")
+
+		grpcServer = grpc.NewServer(
+			grpc.ChainUnaryInterceptor(
+				grpctrace.UnaryServerInterceptor(grpctrace.WithAnalytics(true)),
+				authInterceptor.Unary(),
+			),
+		)
+	} else {
+
+		grpcServer = grpc.NewServer(
+			grpc.ChainUnaryInterceptor(
+				authInterceptor.Unary(),
+			),
+		)
+	}
+
 	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
 	pb.RegisterKISSServer(grpcServer, newServer())
 
