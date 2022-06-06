@@ -48,7 +48,7 @@ var (
 
 	createSecretFromCmd    = flag.NewFlagSet("create-from", flag.ExitOnError)
 	createSecretFromName   = createSecretFromCmd.String("name", "", "The name of the secret.")
-	createSecretFromValue  = createSecretFromCmd.String("value", "", "The plaintext value of the secret.")
+	createSecretFromValue  = createSecretFromCmd.String("value", "", "The path to the file containing the secret.")
 	createSecretFromPolicy = createSecretFromCmd.Bool(
 		"policy",
 		false,
