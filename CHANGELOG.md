@@ -7,3 +7,6 @@
 # v0.1.1
 - Added DataDog metrics
 - Added 'interactive' flag to allow users to specify which token they want to load.
+
+# v0.1.2
+- Add `create-from` flag in CLI to allow creation of secrets from file contents.

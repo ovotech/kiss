@@ -131,10 +131,16 @@ $ go run cmd/main.go ping
 exit status 1
 ```
 
-Other commands include `create`, `update`, `delete` and `list` which do pretty much what you'd expect with AWS Secret Manager secrets logically scoped to the user's k8s namespace. Check the relevant `-help` for more information.
+Other commands include `create`, `create-from`, `update`, `delete` and `list` which do pretty much what you'd expect with AWS Secret Manager secrets logically scoped to the user's k8s namespace. Check the relevant `-help` for more information.
+
+
+### Creating a secret from a file
+
+Sometimes it may be necessary to create a secret which contains newlines, to support this, you can use the `create-from` command, specifying the filepath in the `-value` argument.
 
 **Notes**
 * The `-token-path` is optional for all commands. Without it `kiss` will attempt to find the first file in the default `~/.kube/cache/oidc-login` directory
 * On a Mac you can't use the `~/` path when specifying the token path - instead use `$HOME/`
 * When you create a secret it will be base64 encoded, so you should specify it's value in plaintext
 * A secret name cannot contain underscores as this will result in the "Error occurred while creating secret" error
+* The `-interactive` flag can be used to help choose which token to load if there are multiple in your ~/.kube/cache/oidc-login` directory.

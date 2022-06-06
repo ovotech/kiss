@@ -15,7 +15,6 @@ import (
 	"time"
 
 	"github.com/hashicorp/logutils"
-
 	"github.com/ovotech/kiss/client"
 
 	pb "github.com/ovotech/kiss/proto"
@@ -47,6 +46,15 @@ var (
 		"Create an AWS IAM policy for reading this secret.",
 	)
 
+	createSecretFromCmd    = flag.NewFlagSet("create-from", flag.ExitOnError)
+	createSecretFromName   = createSecretFromCmd.String("name", "", "The name of the secret.")
+	createSecretFromValue  = createSecretFromCmd.String("value", "", "The path to the file containing the secret.")
+	createSecretFromPolicy = createSecretFromCmd.Bool(
+		"policy",
+		false,
+		"Create an AWS IAM policy for reading this secret.",
+	)
+
 	listSecretsCmd = flag.NewFlagSet("list", flag.ExitOnError)
 
 	bindSecretCmd            = flag.NewFlagSet("bind", flag.ExitOnError)
@@ -70,13 +78,14 @@ var (
 	)
 
 	subcommands = map[string]*flag.FlagSet{
-		helpCmd.Name():         helpCmd,
-		pingCmd.Name():         pingCmd,
-		createSecretCmd.Name(): createSecretCmd,
-		listSecretsCmd.Name():  listSecretsCmd,
-		bindSecretCmd.Name():   bindSecretCmd,
-		updateSecretCmd.Name(): updateSecretCmd,
-		deleteSecretCmd.Name(): deleteSecretCmd,
+		helpCmd.Name():             helpCmd,
+		pingCmd.Name():             pingCmd,
+		createSecretCmd.Name():     createSecretCmd,
+		createSecretFromCmd.Name(): createSecretFromCmd,
+		listSecretsCmd.Name():      listSecretsCmd,
+		bindSecretCmd.Name():       bindSecretCmd,
+		updateSecretCmd.Name():     updateSecretCmd,
+		deleteSecretCmd.Name():     deleteSecretCmd,
 	}
 )
 
@@ -151,6 +160,27 @@ func main() {
 		client.CreateSecret(kissClient, timeout, namespace, *createSecretName, *createSecretValue)
 		if *createSecretPolicy {
 			client.CreateSecretIAMPolicy(kissClient, timeout, namespace, *createSecretName)
+		}
+	case "create-from":
+		if *createSecretFromName == "" {
+			log.Fatalf("[ERROR] -name is required, see help for more details.")
+		}
+		if *createSecretFromValue == "" {
+
+			log.Fatalf("[ERROR] -value is required, please specify full file path. See help for more details.")
+		}
+		// read value from file
+
+		dat, err := os.ReadFile(*createSecretFromValue)
+		if err != nil {
+			log.Fatalf("Error occurred reading file %v", err)
+		}
+
+		*createSecretFromValue = string(dat)
+		client.CreateSecret(kissClient, timeout, namespace, *createSecretFromName, *createSecretFromValue)
+
+		if *createSecretFromPolicy {
+			client.CreateSecretIAMPolicy(kissClient, timeout, namespace, *createSecretFromName)
 		}
 	case "list":
 		client.ListSecrets(kissClient, timeout, namespace)
