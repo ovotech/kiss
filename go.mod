@@ -15,7 +15,7 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/hashicorp/logutils v1.0.0
 	github.com/rs/zerolog v1.22.0
-	google.golang.org/grpc v1.38.0
+	google.golang.org/grpc v1.53.0
 	gopkg.in/DataDog/dd-trace-go.v1 v1.37.0
 	k8s.io/api v0.22.4
 	k8s.io/apimachinery v0.22.4
